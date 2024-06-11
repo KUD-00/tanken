@@ -1,3 +1,3 @@
 FROM flyway/flyway:latest
 
-COPY sql /flyway/sql
+COPY /database/migrations /flyway/sql

@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: migrate
+        image: database-migrations:local
+        command: ["flyway", "migrate", "-url=jdbc:postgresql://database-service:5432/postgres", "-user=postgres", "-password=password"]
+      restartPolicy: Never
+  backoffLimit: 4
