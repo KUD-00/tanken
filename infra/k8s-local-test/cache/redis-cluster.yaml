@@ -1,0 +1,33 @@
+cluster:
+  nodes: 6
+  replicas: 1
+
+master:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    accessModes:
+      - ReadWriteOnce
+    size: "2Gi"
+
+replica:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    accessModes:
+      - ReadWriteOnce
+    size: "2Gi"

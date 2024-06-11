@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-cache
+spec:
+  selector:
+    matchLabels:
+      app: user-cache
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: user-cache
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        env:
+        - name: REDIS_REPLICATION_MODE
+          value: "master"
+        - name: REDIS_APPENDONLY
+          value: "no"
+        - name: REDIS_APPENDFSYNC
+          value: "everysec"
+        - name: REDIS_SAVE
+          value: "900 1 300 10 60 10000"
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-cache
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: user-cache
