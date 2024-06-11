@@ -1,6 +1,6 @@
 import { createPromiseClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-node";
-import { PostsService } from "~/rpc/post_connect";
+import { DataFetcherService } from "~/rpc/data-fetcher-service_connect";
 import { getServerSession } from "#auth";
 
 const transport = createConnectTransport({
@@ -8,7 +8,7 @@ const transport = createConnectTransport({
   httpVersion: "2",
 });
 
-const client = createPromiseClient(PostsService, transport);
+const client = createPromiseClient(DataFetcherService, transport);
 
 export default defineEventHandler(async (event) => {
   const session = await getServerSession(event);

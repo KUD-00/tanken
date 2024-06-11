@@ -1,3 +1,5 @@
+-- V1__initial_schema.sql
+
 CREATE TABLE users (
     user_id UUID PRIMARY KEY,
     username TEXT NOT NULL,
@@ -6,7 +8,7 @@ CREATE TABLE users (
     bio TEXT,
     oauth_provider TEXT NOT NULL,
     last_login TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     subscribed INT DEFAULT 0
 );
 
@@ -16,7 +18,7 @@ CREATE TABLE posts (
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP,
-    likes INT DEFAULT 0
+    likes INT DEFAULT 0,
     latitude FLOAT,
     longitude FLOAT,
     status SMALLINT DEFAULT 1
