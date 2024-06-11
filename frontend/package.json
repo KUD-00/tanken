@@ -1,0 +1,42 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "start": "nuxt start"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^1.9.0",
+    "@connectrpc/connect": "^1.4.0",
+    "@connectrpc/connect-node": "^1.4.0",
+    "@connectrpc/connect-web": "^1.4.0",
+    "@mapbox/mapbox-gl-language": "^1.0.1",
+    "@sidebase/nuxt-auth": "^0.7.2",
+    "filepond": "^4.31.1",
+    "filepond-plugin-file-validate-type": "^1.2.9",
+    "filepond-plugin-image-preview": "^4.6.12",
+    "mapbox-gl": "^3.3.0",
+    "next-auth": "4.21.1",
+    "nuxt": "^3.11.2",
+    "oh-vue-icons": "1.0.0-rc3",
+    "piexifjs": "^1.0.6",
+    "vue": "^3.4.21",
+    "vue-filepond": "^7.0.4",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.31.0",
+    "@bufbuild/protoc-gen-es": "^1.9.0",
+    "@connectrpc/protoc-gen-connect-es": "^1.4.0",
+    "autoprefixer": "^10.4.19",
+    "daisyui": "^4.10.2",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3"
+  },
+  "packageManager": "pnpm@8.15.5+sha256.4b4efa12490e5055d59b9b9fc9438b7d581a6b7af3b5675eb5c5f447cee1a589"
+}

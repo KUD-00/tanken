@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package rpc;
+
+import "general.proto";
+
+message Post {
+  string postId = 1;
+  User author = 3;
+  string content = 4;
+  bytes pictureChunk = 5;
+  Location location = 6;
+  int64 likes = 7;
+  int64 bookmarks = 8;
+  repeated Comment comments = 9;
+  repeated string tags = 10;
+  int64 createdAt = 11;
+  int64 updatedAt = 12;
+}
+
+message GetPostsByLocationRequest {
+  Location location = 1;
+  string uuid = 2;
+  int64 radius = 3;
+}
+
+message GetPostsByLocationResponse {
+  int64 ok = 1;
+  string msg = 2;
+  repeated Post posts = 3;
+}
+
+message GetPostsByPostIdsRequest {
+  repeated string postIds = 1;
+}
+
+message GetPostsByPostIdsResponse {
+  int64 ok = 1;
+  string msg = 2;
+  repeated Post posts = 3;
+}
+
+message GetPostsByUserIdRequest {
+  string userId = 1;
+  int64 timestamp = 2;
+}
+
+message GetPostsByUserIdResponse {
+  int64 ok = 1;
+  string msg = 2;
+  repeated Post posts = 3;
+}
+
+// TODO: nuxt.js cannot 'use server' right?
+// or, can next.js use 'use server' to execute server function with user input?
+// or, we need something like grpc-web to communicate with data service? look at the poor support of grpc for es6 javascript!
+// or, connectgrpc has some good things?
+// and the gateway is needed for auth or something. How to design the gateway to prevent ddos attack?
+// or, we need a microservice to recieve RESTful request and then do rpc with data service?
+// if we need provide api for developers, is RESTful APIs a must for better use?
+message AddPostRequest {
+  string userId = 1;
+  bytes pictureChunk = 2;
+  Location location = 3;
+  string content = 4;
+  repeated string tags = 5;
+}
+
+message AddPostResponse {
+  int64 ok = 1;
+  string msg = 2;
+  string postId = 3;
+  repeated string pictureLinks = 4;
+}
+
+message RemovePostRequest {
+  string userId = 1;
+  string postId = 2;
+}
+
+message RemovePostResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message AddLikeRequest {
+  string userId = 1;
+  string postId = 2;
+}
+
+message AddLikeResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message RemoveLikeRequest {
+  string userId = 1;
+  string postId = 2;
+}
+
+message RemoveLikeResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message GetLikesRequest {
+  string userId = 1;
+}
+
+message GetLikesResponse {
+  int64 ok = 1;
+  string msg = 2;
+  repeated Post posts = 3;
+}
+
+message AddBookmarkRequest {
+  string userId = 1;
+  string postId = 2;
+}
+
+message AddBookmarkResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message RemoveBookmarkRequest {
+  string userId = 1;
+  string postId = 2;
+}
+
+message RemoveBookmarkResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message GetBookmarksRequest {
+  string userId = 1;
+}
+
+message GetBookmarksResponse {
+  int64 ok = 1;
+  string msg = 2;
+  repeated Post posts = 3;
+}
+
+message AddCommentRequest {
+  string userId = 1;
+  string postId = 2;
+  string content = 3;
+}
+
+message AddCommentResponse {
+  int64 ok = 1;
+  string msg = 2;
+  string commentId = 3;
+}
+
+message RemoveCommentRequest {
+  string userId = 1;
+  string postId = 2;
+  string commentId = 3;
+}
+
+message RemoveCommentResponse {
+  int64 ok = 1;
+  string msg = 2;
+}

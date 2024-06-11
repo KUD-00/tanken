@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: frontend:local
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+          - name: NUXT_MAPBOX_ACCESS_TOKEN
+            value: "pk.eyJ1Ijoia3VkMDAiLCJhIjoiY2x2N2g1eHF3MDVjcjJrcDZ0azhhZzhndCJ9.8kF5iT7DrylxHrArgEnXgQ"
+          - name: NUXT_GITHUB_CLIENT_ID
+            value: "d28501f357fa49a54cd5"
+          - name: NUXT_GITHUB_CLIENT_SECRET
+            value: "fcecbd1b9ddee8e61d831d58cbe2d146a2ad1963"
+          - name: AUTH_ORIGIN
+            value: "http://localhost:3000"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP

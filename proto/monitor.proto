@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package rpc;
+
+message WriteBackCacheRequest {
+    double usage = 1;
+}
+
+message WriteBackCacheResponse {
+    bool ok = 1;
+}
