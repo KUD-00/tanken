@@ -2,12 +2,12 @@ package rpc
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"tanken/backend/common/cache"
 	database "tanken/backend/common/db"
 	types "tanken/backend/common/types"
+	utils "tanken/backend/common/utils"
 
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -27,22 +27,22 @@ func generateUniqueUserID(ctx context.Context, db database.DatabaseService) (str
 	}
 }
 
-func getUser(ctx context.Context, userId string, pc cache.PostCacheService, db *sql.DB) (*types.User, error) {
-	exists, err := pc.IsKeyExist(ctx, "user:"+userId)
+func getUser(ctx context.Context, userId string, uc cache.UserCacheService, db database.DatabaseService) (*types.User, error) {
+	exists, err := uc.IsKeyExist(ctx, "user:"+userId)
 
 	if err != nil {
 		return nil, fmt.Errorf("error checking Redis: %v", err)
 	}
 
 	if exists {
-		user, err := pc.GetUser(ctx, userId)
+		user, err := uc.GetUser(ctx, userId)
 		if err != nil {
 			return nil, err
 		}
 		return user, nil
 	}
 
-	user, err := getUserFromDB(ctx, userId, pc, db)
+	user, err := db.GetUserById(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -50,17 +50,46 @@ func getUser(ctx context.Context, userId string, pc cache.PostCacheService, db *
 	return user, nil
 }
 
-func getUserFromDB(ctx context.Context, userId string, pc cache.PostCacheService, db *sql.DB) (*types.User, error) {
-	var user types.User
-
-	err := db.QueryRowContext(ctx, "SELECT user_id, username, bio, avatar, subscribed FROM users WHERE user_id = $1", userId).Scan(&user.UserId, &user.Username, &user.Bio, &user.Avatar, &user.Subscribed)
+func setUser(ctx context.Context, userId string, user *types.UserPtr, needWriteBackNow bool, needCache bool, uc cache.UserCacheService, db database.DatabaseService) error {
+	exists, err := uc.IsKeyExist(ctx, "user:"+userId)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching user from PostgreSQL: %v", err)
+		return fmt.Errorf("error checking Redis: %v", err)
 	}
 
-	if err := pc.SetUser(ctx, userId, &user); err != nil {
-		return &user, err
+	if exists {
+		if needWriteBackNow {
+			if err = db.SetUserById(ctx, userId, user); err != nil {
+				return err
+			}
+
+			if err = uc.SetUserOptional(ctx, userId, user); err != nil {
+				return err
+			}
+		} else {
+			user.Changed = utils.BoolPtr(true)
+
+			if err = uc.SetUserOptional(ctx, userId, user); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	} else {
+		if err = db.SetUserById(ctx, userId, user); err != nil {
+			return err
+		}
+
+		if needCache {
+			user, err := db.GetUserById(ctx, userId)
+			if err != nil {
+				return err
+			}
+
+			if err = uc.SetUser(ctx, userId, user); err != nil {
+				return err
+			}
+		}
 	}
 
-	return &user, nil
+	return nil
 }

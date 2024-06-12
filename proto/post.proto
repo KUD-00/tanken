@@ -51,13 +51,6 @@ message GetPostsByUserIdResponse {
   repeated Post posts = 3;
 }
 
-// TODO: nuxt.js cannot 'use server' right?
-// or, can next.js use 'use server' to execute server function with user input?
-// or, we need something like grpc-web to communicate with data service? look at the poor support of grpc for es6 javascript!
-// or, connectgrpc has some good things?
-// and the gateway is needed for auth or something. How to design the gateway to prevent ddos attack?
-// or, we need a microservice to recieve RESTful request and then do rpc with data service?
-// if we need provide api for developers, is RESTful APIs a must for better use?
 message AddPostRequest {
   string userId = 1;
   bytes pictureChunk = 2;
@@ -73,12 +66,22 @@ message AddPostResponse {
   repeated string pictureLinks = 4;
 }
 
-message RemovePostRequest {
+message HardDeletePostRequest {
   string userId = 1;
   string postId = 2;
 }
 
-message RemovePostResponse {
+message HardDeletePostResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message SoftDeletePostRequest {
+  string userId = 1;
+  string postId = 2;
+}
+
+message SoftDeletePostResponse {
   int64 ok = 1;
   string msg = 2;
 }

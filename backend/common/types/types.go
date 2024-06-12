@@ -32,6 +32,7 @@ type PostDetailsPtr struct {
 	Bookmarks  *int64
 	Status     *int64
 	CacheScore *int64
+	Changed    *bool
 }
 
 type PostSets struct {
@@ -71,6 +72,7 @@ type UserPtr struct {
 	Subscribed    *int64
 	Avatar        *string
 	OauthProvider *string
+	Changed       *bool
 }
 
 type UserSets struct {

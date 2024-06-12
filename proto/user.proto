@@ -28,11 +28,20 @@ message GetUserInfoResponse {
   User user = 3;
 }
 
-message DeleteUserRequest {
+message SoftDeleteUserRequest {
   string userId = 1;
 }
 
-message DeleteUserResponse {
+message SoftDeleteUserResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message HardDeleteUserRequest {
+  string userId = 1;
+}
+
+message HardDeleteUserResponse {
   int64 ok = 1;
   string msg = 2;
 }

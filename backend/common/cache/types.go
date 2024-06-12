@@ -70,8 +70,23 @@ type GeoCacheService interface {
 	GeoRadius(ctx context.Context, key string, longitude, latitude float64, query *redis.GeoRadiusQuery) ([]redis.GeoLocation, error)
 }
 
+type UserCacheService interface {
+	CacheService
+
+	GetUser(ctx context.Context, userID string) (*types.User, error)
+	SetUserOptional(ctx context.Context, userId string, user *types.UserPtr) error
+	SetUser(ctx context.Context, userId string, user *types.User) error
+	RemoveUser(ctx context.Context, userID string) error
+}
+
 type CachedPost struct {
 	types.Post
+	CacheScore int64
+	Changed    bool
+}
+
+type CachedUser struct {
+	types.User
 	CacheScore int64
 	Changed    bool
 }

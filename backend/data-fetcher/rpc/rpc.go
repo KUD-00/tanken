@@ -27,6 +27,7 @@ type server struct {
 	db        *database.PostgresDatabaseService
 	postCache *cache.PostRedisCacheService
 	geoCache  *cache.GeoRedisCacheService
+	userCache *cache.UserRedisCacheService
 	// uploader       *s3manager.Uploader
 }
 
@@ -139,6 +140,14 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 	return connect.NewResponse(&pb.AddPostResponse{Ok: 1, PostId: postID}), nil
 }
 
+func (s *server) HardDeletePost(ctx context.Context, req *connect.Request[pb.HardDeletePostRequest]) (*connect.Response[pb.HardDeletePostResponse], error) {
+	return connect.NewResponse(&pb.HardDeletePostResponse{}), nil
+}
+
+func (s *server) SoftDeletePost(ctx context.Context, req *connect.Request[pb.SoftDeletePostRequest]) (*connect.Response[pb.SoftDeletePostResponse], error) {
+	return connect.NewResponse(&pb.SoftDeletePostResponse{}), nil
+}
+
 func (s *server) AddLike(ctx context.Context, req *connect.Request[pb.AddLikeRequest]) (*connect.Response[pb.AddLikeResponse], error) {
 	if err := incrementLikes(ctx, req.Msg.UserId, req.Msg.UserId, s.postCache, s.geoCache, s.db); err != nil {
 		return connect.NewResponse(&pb.AddLikeResponse{Ok: 0, Msg: err.Error()}), nil
@@ -197,12 +206,16 @@ func (s *server) GetUserInfoByOAuth(ctx context.Context, req *connect.Request[pb
 	return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 1, User: &user}), nil
 }
 
-func (s *server) DeleteUser(ctx context.Context, req *connect.Request[pb.DeleteUserRequest]) (*connect.Response[pb.DeleteUserResponse], error) {
-	return connect.NewResponse(&pb.DeleteUserResponse{}), nil
+func (s *server) HardDeleteUser(ctx context.Context, req *connect.Request[pb.HardDeleteUserRequest]) (*connect.Response[pb.HardDeleteUserResponse], error) {
+	return connect.NewResponse(&pb.HardDeleteUserResponse{}), nil
+}
+
+func (s *server) SoftDeleteUser(ctx context.Context, req *connect.Request[pb.SoftDeleteUserRequest]) (*connect.Response[pb.SoftDeleteUserResponse], error) {
+	return connect.NewResponse(&pb.SoftDeleteUserResponse{}), nil
 }
 
 func (s *server) GetUserInfo(ctx context.Context, req *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error) {
-	user, err := s.db.GetUserById(ctx, req.Msg.UserId)
+	user, err := getUser(ctx, req.Msg.UserId, s.userCache, s.db)
 
 	if err != nil {
 		return connect.NewResponse(&pb.GetUserInfoResponse{Ok: 0, Msg: err.Error()}), nil
@@ -236,19 +249,18 @@ func (s *server) SignUpUser(ctx context.Context, req *connect.Request[pb.SignUpU
 	}
 
 	s.db.SetUserById(ctx, userId, &user)
+	s.userCache.SetUserOptional(ctx, userId, &user)
 
 	return connect.NewResponse(&pb.SignUpUserResponse{Ok: 1, UserId: userId}), nil
 }
 
 func (s *server) UpdateUser(ctx context.Context, req *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error) {
-	err := s.db.SetUserById(ctx, req.Msg.UserId, &types.UserPtr{
+	if err := setUser(ctx, req.Msg.UserId, &types.UserPtr{
 		Username:   &req.Msg.Name,
 		Bio:        &req.Msg.Bio,
 		Subscribed: &req.Msg.Subscribed,
 		Avatar:     &req.Msg.ProfilePictureLink,
-	})
-
-	if err != nil {
+	}, false, true, s.userCache, s.db); err != nil {
 		return connect.NewResponse(&pb.UpdateUserResponse{Ok: 0, Msg: err.Error()}), nil
 	}
 

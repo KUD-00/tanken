@@ -3,9 +3,9 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddBookmarkRequest, AddBookmarkResponse, AddCommentRequest, AddCommentResponse, AddLikeRequest, AddLikeResponse, AddPostRequest, AddPostResponse, GetPostsByLocationRequest, GetPostsByLocationResponse, GetPostsByPostIdsRequest, GetPostsByPostIdsResponse, GetPostsByUserIdRequest, GetPostsByUserIdResponse, RemoveBookmarkRequest, RemoveBookmarkResponse, RemoveCommentRequest, RemoveCommentResponse, RemoveLikeRequest, RemoveLikeResponse } from "./post_pb.js";
+import { AddBookmarkRequest, AddBookmarkResponse, AddCommentRequest, AddCommentResponse, AddLikeRequest, AddLikeResponse, AddPostRequest, AddPostResponse, GetPostsByLocationRequest, GetPostsByLocationResponse, GetPostsByPostIdsRequest, GetPostsByPostIdsResponse, GetPostsByUserIdRequest, GetPostsByUserIdResponse, HardDeletePostRequest, HardDeletePostResponse, RemoveBookmarkRequest, RemoveBookmarkResponse, RemoveCommentRequest, RemoveCommentResponse, RemoveLikeRequest, RemoveLikeResponse, SoftDeletePostRequest, SoftDeletePostResponse } from "./post_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import { DeleteUserRequest, DeleteUserResponse, GetUserInfoByOAuthRequest, GetUserInfoByOAuthResponse, GetUserInfoRequest, GetUserInfoResponse, SignUpUserRequest, SignUpUserResponse, UpdateUserRequest, UpdateUserResponse } from "./user_pb.js";
+import { GetUserInfoByOAuthRequest, GetUserInfoByOAuthResponse, GetUserInfoRequest, GetUserInfoResponse, HardDeleteUserRequest, HardDeleteUserResponse, SignUpUserRequest, SignUpUserResponse, SoftDeleteUserRequest, SoftDeleteUserResponse, UpdateUserRequest, UpdateUserResponse } from "./user_pb.js";
 
 /**
  * @generated from service rpc.DataFetcherService
@@ -47,6 +47,24 @@ export const DataFetcherService = {
       name: "AddPost",
       I: AddPostRequest,
       O: AddPostResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.HardDeletePost
+     */
+    hardDeletePost: {
+      name: "HardDeletePost",
+      I: HardDeletePostRequest,
+      O: HardDeletePostResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.SoftDeletePost
+     */
+    softDeletePost: {
+      name: "SoftDeletePost",
+      I: SoftDeletePostRequest,
+      O: SoftDeletePostResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -104,15 +122,6 @@ export const DataFetcherService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc rpc.DataFetcherService.SignUpUser
-     */
-    signUpUser: {
-      name: "SignUpUser",
-      I: SignUpUserRequest,
-      O: SignUpUserResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
      * @generated from rpc rpc.DataFetcherService.GetUserInfo
      */
     getUserInfo: {
@@ -122,12 +131,12 @@ export const DataFetcherService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc rpc.DataFetcherService.DeleteUser
+     * @generated from rpc rpc.DataFetcherService.SignUpUser
      */
-    deleteUser: {
-      name: "DeleteUser",
-      I: DeleteUserRequest,
-      O: DeleteUserResponse,
+    signUpUser: {
+      name: "SignUpUser",
+      I: SignUpUserRequest,
+      O: SignUpUserResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -137,6 +146,24 @@ export const DataFetcherService = {
       name: "UpdateUser",
       I: UpdateUserRequest,
       O: UpdateUserResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.HardDeleteUser
+     */
+    hardDeleteUser: {
+      name: "HardDeleteUser",
+      I: HardDeleteUserRequest,
+      O: HardDeleteUserResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.SoftDeleteUser
+     */
+    softDeleteUser: {
+      name: "SoftDeleteUser",
+      I: SoftDeleteUserRequest,
+      O: SoftDeleteUserResponse,
       kind: MethodKind.Unary,
     },
     /**
