@@ -381,14 +381,6 @@ export class GetPostsByUserIdResponse extends Message<GetPostsByUserIdResponse> 
 }
 
 /**
- * TODO: nuxt.js cannot 'use server' right?
- * or, can next.js use 'use server' to execute server function with user input?
- * or, we need something like grpc-web to communicate with data service? look at the poor support of grpc for es6 javascript!
- * or, connectgrpc has some good things?
- * and the gateway is needed for auth or something. How to design the gateway to prevent ddos attack?
- * or, we need a microservice to recieve RESTful request and then do rpc with data service?
- * if we need provide api for developers, is RESTful APIs a must for better use?
- *
  * @generated from message rpc.AddPostRequest
  */
 export class AddPostRequest extends Message<AddPostRequest> {
@@ -505,9 +497,9 @@ export class AddPostResponse extends Message<AddPostResponse> {
 }
 
 /**
- * @generated from message rpc.RemovePostRequest
+ * @generated from message rpc.HardDeletePostRequest
  */
-export class RemovePostRequest extends Message<RemovePostRequest> {
+export class HardDeletePostRequest extends Message<HardDeletePostRequest> {
   /**
    * @generated from field: string userId = 1;
    */
@@ -518,39 +510,39 @@ export class RemovePostRequest extends Message<RemovePostRequest> {
    */
   postId = "";
 
-  constructor(data?: PartialMessage<RemovePostRequest>) {
+  constructor(data?: PartialMessage<HardDeletePostRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "rpc.RemovePostRequest";
+  static readonly typeName = "rpc.HardDeletePostRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "userId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "postId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RemovePostRequest {
-    return new RemovePostRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): HardDeletePostRequest {
+    return new HardDeletePostRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RemovePostRequest {
-    return new RemovePostRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): HardDeletePostRequest {
+    return new HardDeletePostRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RemovePostRequest {
-    return new RemovePostRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): HardDeletePostRequest {
+    return new HardDeletePostRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: RemovePostRequest | PlainMessage<RemovePostRequest> | undefined, b: RemovePostRequest | PlainMessage<RemovePostRequest> | undefined): boolean {
-    return proto3.util.equals(RemovePostRequest, a, b);
+  static equals(a: HardDeletePostRequest | PlainMessage<HardDeletePostRequest> | undefined, b: HardDeletePostRequest | PlainMessage<HardDeletePostRequest> | undefined): boolean {
+    return proto3.util.equals(HardDeletePostRequest, a, b);
   }
 }
 
 /**
- * @generated from message rpc.RemovePostResponse
+ * @generated from message rpc.HardDeletePostResponse
  */
-export class RemovePostResponse extends Message<RemovePostResponse> {
+export class HardDeletePostResponse extends Message<HardDeletePostResponse> {
   /**
    * @generated from field: int64 ok = 1;
    */
@@ -561,32 +553,118 @@ export class RemovePostResponse extends Message<RemovePostResponse> {
    */
   msg = "";
 
-  constructor(data?: PartialMessage<RemovePostResponse>) {
+  constructor(data?: PartialMessage<HardDeletePostResponse>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "rpc.RemovePostResponse";
+  static readonly typeName = "rpc.HardDeletePostResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "ok", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 2, name: "msg", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RemovePostResponse {
-    return new RemovePostResponse().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): HardDeletePostResponse {
+    return new HardDeletePostResponse().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RemovePostResponse {
-    return new RemovePostResponse().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): HardDeletePostResponse {
+    return new HardDeletePostResponse().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RemovePostResponse {
-    return new RemovePostResponse().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): HardDeletePostResponse {
+    return new HardDeletePostResponse().fromJsonString(jsonString, options);
   }
 
-  static equals(a: RemovePostResponse | PlainMessage<RemovePostResponse> | undefined, b: RemovePostResponse | PlainMessage<RemovePostResponse> | undefined): boolean {
-    return proto3.util.equals(RemovePostResponse, a, b);
+  static equals(a: HardDeletePostResponse | PlainMessage<HardDeletePostResponse> | undefined, b: HardDeletePostResponse | PlainMessage<HardDeletePostResponse> | undefined): boolean {
+    return proto3.util.equals(HardDeletePostResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rpc.SoftDeletePostRequest
+ */
+export class SoftDeletePostRequest extends Message<SoftDeletePostRequest> {
+  /**
+   * @generated from field: string userId = 1;
+   */
+  userId = "";
+
+  /**
+   * @generated from field: string postId = 2;
+   */
+  postId = "";
+
+  constructor(data?: PartialMessage<SoftDeletePostRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rpc.SoftDeletePostRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "userId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "postId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SoftDeletePostRequest {
+    return new SoftDeletePostRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SoftDeletePostRequest {
+    return new SoftDeletePostRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SoftDeletePostRequest {
+    return new SoftDeletePostRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SoftDeletePostRequest | PlainMessage<SoftDeletePostRequest> | undefined, b: SoftDeletePostRequest | PlainMessage<SoftDeletePostRequest> | undefined): boolean {
+    return proto3.util.equals(SoftDeletePostRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rpc.SoftDeletePostResponse
+ */
+export class SoftDeletePostResponse extends Message<SoftDeletePostResponse> {
+  /**
+   * @generated from field: int64 ok = 1;
+   */
+  ok = protoInt64.zero;
+
+  /**
+   * @generated from field: string msg = 2;
+   */
+  msg = "";
+
+  constructor(data?: PartialMessage<SoftDeletePostResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rpc.SoftDeletePostResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "ok", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 2, name: "msg", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SoftDeletePostResponse {
+    return new SoftDeletePostResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SoftDeletePostResponse {
+    return new SoftDeletePostResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SoftDeletePostResponse {
+    return new SoftDeletePostResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SoftDeletePostResponse | PlainMessage<SoftDeletePostResponse> | undefined, b: SoftDeletePostResponse | PlainMessage<SoftDeletePostResponse> | undefined): boolean {
+    return proto3.util.equals(SoftDeletePostResponse, a, b);
   }
 }
 

@@ -11,17 +11,24 @@ service DataFetcherService{
   rpc GetPostsByLocation(GetPostsByLocationRequest) returns (GetPostsByLocationResponse) {}
   rpc GetPostsByPostIds(GetPostsByPostIdsRequest) returns (GetPostsByPostIdsResponse) {}
   rpc GetPostsByUser(GetPostsByUserIdRequest) returns (GetPostsByUserIdResponse) {}
+
   rpc AddPost(AddPostRequest) returns (AddPostResponse) {}
+  rpc HardDeletePost(HardDeletePostRequest) returns (HardDeletePostResponse) {}
+  rpc SoftDeletePost(SoftDeletePostRequest) returns (SoftDeletePostResponse) {}
+
   rpc AddLike(AddLikeRequest) returns (AddLikeResponse) {}
   rpc RemoveLike(RemoveLikeRequest) returns (RemoveLikeResponse) {}
+
   rpc AddBookmark(AddBookmarkRequest) returns (AddBookmarkResponse) {}
   rpc RemoveBookmark(RemoveBookmarkRequest) returns (RemoveBookmarkResponse) {}
+
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse) {}
   rpc RemoveComment(RemoveCommentRequest) returns (RemoveCommentResponse) {}
   
-  rpc SignUpUser(SignUpUserRequest) returns (SignUpUserResponse);
   rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse);
-  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc SignUpUser(SignUpUserRequest) returns (SignUpUserResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc HardDeleteUser(HardDeleteUserRequest) returns (HardDeleteUserResponse);
+  rpc SoftDeleteUser(SoftDeleteUserRequest) returns (SoftDeleteUserResponse);
   rpc GetUserInfoByOAuth(GetUserInfoByOAuthRequest) returns (GetUserInfoByOAuthResponse);
 }

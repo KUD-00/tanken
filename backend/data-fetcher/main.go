@@ -20,13 +20,14 @@ import (
 var (
 	geo_postid_rdb *redis.Client
 	post_cache_rdb *redis.Client
+	user_cache_rdb *redis.Client
 	db             *sql.DB
 	ctx            = context.Background()
 )
 
-func initGeoPostIdRedis() {
+func initGeoCache() {
 	geo_postid_rdb = redis.NewClient(&redis.Options{
-		Addr:     "geo-postid-redis:6379",
+		Addr:     "geocache:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -41,7 +42,7 @@ func initGeoPostIdRedis() {
 
 func initPostCache() {
 	post_cache_rdb = redis.NewClient(&redis.Options{
-		Addr:     "post-cache:6379",
+		Addr:     "postcache:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
@@ -51,6 +52,21 @@ func initPostCache() {
 		log.Fatalf("Failed to connect to post-cache Redis: %v", err)
 	} else {
 		log.Println("Connected successfully to post-cache Redis")
+	}
+}
+
+func initUserCache() {
+	user_cache_rdb = redis.NewClient(&redis.Options{
+		Addr:     "usercache:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	_, err := user_cache_rdb.Ping(ctx).Result()
+	if err != nil {
+		log.Fatalf("Failed to connect to user-cache Redis: %v", err)
+	} else {
+		log.Println("Connected successfully to user-cache Redis")
 	}
 }
 
@@ -100,8 +116,9 @@ func initS3(sess *session.Session) *s3manager.Uploader {
 }
 
 func main() {
-	initGeoPostIdRedis()
+	initGeoCache()
 	initPostCache()
+	initUserCache()
 
 	initPostgres()
 

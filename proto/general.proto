@@ -21,6 +21,7 @@ message User {
   string profilePictureLink = 5;
   string bio = 6;
   int64 subscribed = 7;
+  int64 status = 8;
 }
 
 message Location {

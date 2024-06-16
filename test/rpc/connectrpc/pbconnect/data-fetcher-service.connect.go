@@ -45,6 +45,12 @@ const (
 	// DataFetcherServiceAddPostProcedure is the fully-qualified name of the DataFetcherService's
 	// AddPost RPC.
 	DataFetcherServiceAddPostProcedure = "/rpc.DataFetcherService/AddPost"
+	// DataFetcherServiceHardDeletePostProcedure is the fully-qualified name of the DataFetcherService's
+	// HardDeletePost RPC.
+	DataFetcherServiceHardDeletePostProcedure = "/rpc.DataFetcherService/HardDeletePost"
+	// DataFetcherServiceSoftDeletePostProcedure is the fully-qualified name of the DataFetcherService's
+	// SoftDeletePost RPC.
+	DataFetcherServiceSoftDeletePostProcedure = "/rpc.DataFetcherService/SoftDeletePost"
 	// DataFetcherServiceAddLikeProcedure is the fully-qualified name of the DataFetcherService's
 	// AddLike RPC.
 	DataFetcherServiceAddLikeProcedure = "/rpc.DataFetcherService/AddLike"
@@ -63,18 +69,21 @@ const (
 	// DataFetcherServiceRemoveCommentProcedure is the fully-qualified name of the DataFetcherService's
 	// RemoveComment RPC.
 	DataFetcherServiceRemoveCommentProcedure = "/rpc.DataFetcherService/RemoveComment"
-	// DataFetcherServiceSignUpUserProcedure is the fully-qualified name of the DataFetcherService's
-	// SignUpUser RPC.
-	DataFetcherServiceSignUpUserProcedure = "/rpc.DataFetcherService/SignUpUser"
 	// DataFetcherServiceGetUserInfoProcedure is the fully-qualified name of the DataFetcherService's
 	// GetUserInfo RPC.
 	DataFetcherServiceGetUserInfoProcedure = "/rpc.DataFetcherService/GetUserInfo"
-	// DataFetcherServiceDeleteUserProcedure is the fully-qualified name of the DataFetcherService's
-	// DeleteUser RPC.
-	DataFetcherServiceDeleteUserProcedure = "/rpc.DataFetcherService/DeleteUser"
+	// DataFetcherServiceSignUpUserProcedure is the fully-qualified name of the DataFetcherService's
+	// SignUpUser RPC.
+	DataFetcherServiceSignUpUserProcedure = "/rpc.DataFetcherService/SignUpUser"
 	// DataFetcherServiceUpdateUserProcedure is the fully-qualified name of the DataFetcherService's
 	// UpdateUser RPC.
 	DataFetcherServiceUpdateUserProcedure = "/rpc.DataFetcherService/UpdateUser"
+	// DataFetcherServiceHardDeleteUserProcedure is the fully-qualified name of the DataFetcherService's
+	// HardDeleteUser RPC.
+	DataFetcherServiceHardDeleteUserProcedure = "/rpc.DataFetcherService/HardDeleteUser"
+	// DataFetcherServiceSoftDeleteUserProcedure is the fully-qualified name of the DataFetcherService's
+	// SoftDeleteUser RPC.
+	DataFetcherServiceSoftDeleteUserProcedure = "/rpc.DataFetcherService/SoftDeleteUser"
 	// DataFetcherServiceGetUserInfoByOAuthProcedure is the fully-qualified name of the
 	// DataFetcherService's GetUserInfoByOAuth RPC.
 	DataFetcherServiceGetUserInfoByOAuthProcedure = "/rpc.DataFetcherService/GetUserInfoByOAuth"
@@ -87,16 +96,19 @@ var (
 	dataFetcherServiceGetPostsByPostIdsMethodDescriptor  = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByPostIds")
 	dataFetcherServiceGetPostsByUserMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByUser")
 	dataFetcherServiceAddPostMethodDescriptor            = dataFetcherServiceServiceDescriptor.Methods().ByName("AddPost")
+	dataFetcherServiceHardDeletePostMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("HardDeletePost")
+	dataFetcherServiceSoftDeletePostMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("SoftDeletePost")
 	dataFetcherServiceAddLikeMethodDescriptor            = dataFetcherServiceServiceDescriptor.Methods().ByName("AddLike")
 	dataFetcherServiceRemoveLikeMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveLike")
 	dataFetcherServiceAddBookmarkMethodDescriptor        = dataFetcherServiceServiceDescriptor.Methods().ByName("AddBookmark")
 	dataFetcherServiceRemoveBookmarkMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveBookmark")
 	dataFetcherServiceAddCommentMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("AddComment")
 	dataFetcherServiceRemoveCommentMethodDescriptor      = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveComment")
-	dataFetcherServiceSignUpUserMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("SignUpUser")
 	dataFetcherServiceGetUserInfoMethodDescriptor        = dataFetcherServiceServiceDescriptor.Methods().ByName("GetUserInfo")
-	dataFetcherServiceDeleteUserMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("DeleteUser")
+	dataFetcherServiceSignUpUserMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("SignUpUser")
 	dataFetcherServiceUpdateUserMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("UpdateUser")
+	dataFetcherServiceHardDeleteUserMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("HardDeleteUser")
+	dataFetcherServiceSoftDeleteUserMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("SoftDeleteUser")
 	dataFetcherServiceGetUserInfoByOAuthMethodDescriptor = dataFetcherServiceServiceDescriptor.Methods().ByName("GetUserInfoByOAuth")
 )
 
@@ -106,16 +118,19 @@ type DataFetcherServiceClient interface {
 	GetPostsByPostIds(context.Context, *connect.Request[pb.GetPostsByPostIdsRequest]) (*connect.Response[pb.GetPostsByPostIdsResponse], error)
 	GetPostsByUser(context.Context, *connect.Request[pb.GetPostsByUserIdRequest]) (*connect.Response[pb.GetPostsByUserIdResponse], error)
 	AddPost(context.Context, *connect.Request[pb.AddPostRequest]) (*connect.Response[pb.AddPostResponse], error)
+	HardDeletePost(context.Context, *connect.Request[pb.HardDeletePostRequest]) (*connect.Response[pb.HardDeletePostResponse], error)
+	SoftDeletePost(context.Context, *connect.Request[pb.SoftDeletePostRequest]) (*connect.Response[pb.SoftDeletePostResponse], error)
 	AddLike(context.Context, *connect.Request[pb.AddLikeRequest]) (*connect.Response[pb.AddLikeResponse], error)
 	RemoveLike(context.Context, *connect.Request[pb.RemoveLikeRequest]) (*connect.Response[pb.RemoveLikeResponse], error)
 	AddBookmark(context.Context, *connect.Request[pb.AddBookmarkRequest]) (*connect.Response[pb.AddBookmarkResponse], error)
 	RemoveBookmark(context.Context, *connect.Request[pb.RemoveBookmarkRequest]) (*connect.Response[pb.RemoveBookmarkResponse], error)
 	AddComment(context.Context, *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error)
 	RemoveComment(context.Context, *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error)
-	SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error)
 	GetUserInfo(context.Context, *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error)
-	DeleteUser(context.Context, *connect.Request[pb.DeleteUserRequest]) (*connect.Response[pb.DeleteUserResponse], error)
+	SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error)
 	UpdateUser(context.Context, *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error)
+	HardDeleteUser(context.Context, *connect.Request[pb.HardDeleteUserRequest]) (*connect.Response[pb.HardDeleteUserResponse], error)
+	SoftDeleteUser(context.Context, *connect.Request[pb.SoftDeleteUserRequest]) (*connect.Response[pb.SoftDeleteUserResponse], error)
 	GetUserInfoByOAuth(context.Context, *connect.Request[pb.GetUserInfoByOAuthRequest]) (*connect.Response[pb.GetUserInfoByOAuthResponse], error)
 }
 
@@ -151,6 +166,18 @@ func NewDataFetcherServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			httpClient,
 			baseURL+DataFetcherServiceAddPostProcedure,
 			connect.WithSchema(dataFetcherServiceAddPostMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		hardDeletePost: connect.NewClient[pb.HardDeletePostRequest, pb.HardDeletePostResponse](
+			httpClient,
+			baseURL+DataFetcherServiceHardDeletePostProcedure,
+			connect.WithSchema(dataFetcherServiceHardDeletePostMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		softDeletePost: connect.NewClient[pb.SoftDeletePostRequest, pb.SoftDeletePostResponse](
+			httpClient,
+			baseURL+DataFetcherServiceSoftDeletePostProcedure,
+			connect.WithSchema(dataFetcherServiceSoftDeletePostMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 		addLike: connect.NewClient[pb.AddLikeRequest, pb.AddLikeResponse](
@@ -189,28 +216,34 @@ func NewDataFetcherServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(dataFetcherServiceRemoveCommentMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
-		signUpUser: connect.NewClient[pb.SignUpUserRequest, pb.SignUpUserResponse](
-			httpClient,
-			baseURL+DataFetcherServiceSignUpUserProcedure,
-			connect.WithSchema(dataFetcherServiceSignUpUserMethodDescriptor),
-			connect.WithClientOptions(opts...),
-		),
 		getUserInfo: connect.NewClient[pb.GetUserInfoRequest, pb.GetUserInfoResponse](
 			httpClient,
 			baseURL+DataFetcherServiceGetUserInfoProcedure,
 			connect.WithSchema(dataFetcherServiceGetUserInfoMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
-		deleteUser: connect.NewClient[pb.DeleteUserRequest, pb.DeleteUserResponse](
+		signUpUser: connect.NewClient[pb.SignUpUserRequest, pb.SignUpUserResponse](
 			httpClient,
-			baseURL+DataFetcherServiceDeleteUserProcedure,
-			connect.WithSchema(dataFetcherServiceDeleteUserMethodDescriptor),
+			baseURL+DataFetcherServiceSignUpUserProcedure,
+			connect.WithSchema(dataFetcherServiceSignUpUserMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 		updateUser: connect.NewClient[pb.UpdateUserRequest, pb.UpdateUserResponse](
 			httpClient,
 			baseURL+DataFetcherServiceUpdateUserProcedure,
 			connect.WithSchema(dataFetcherServiceUpdateUserMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		hardDeleteUser: connect.NewClient[pb.HardDeleteUserRequest, pb.HardDeleteUserResponse](
+			httpClient,
+			baseURL+DataFetcherServiceHardDeleteUserProcedure,
+			connect.WithSchema(dataFetcherServiceHardDeleteUserMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		softDeleteUser: connect.NewClient[pb.SoftDeleteUserRequest, pb.SoftDeleteUserResponse](
+			httpClient,
+			baseURL+DataFetcherServiceSoftDeleteUserProcedure,
+			connect.WithSchema(dataFetcherServiceSoftDeleteUserMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 		getUserInfoByOAuth: connect.NewClient[pb.GetUserInfoByOAuthRequest, pb.GetUserInfoByOAuthResponse](
@@ -228,16 +261,19 @@ type dataFetcherServiceClient struct {
 	getPostsByPostIds  *connect.Client[pb.GetPostsByPostIdsRequest, pb.GetPostsByPostIdsResponse]
 	getPostsByUser     *connect.Client[pb.GetPostsByUserIdRequest, pb.GetPostsByUserIdResponse]
 	addPost            *connect.Client[pb.AddPostRequest, pb.AddPostResponse]
+	hardDeletePost     *connect.Client[pb.HardDeletePostRequest, pb.HardDeletePostResponse]
+	softDeletePost     *connect.Client[pb.SoftDeletePostRequest, pb.SoftDeletePostResponse]
 	addLike            *connect.Client[pb.AddLikeRequest, pb.AddLikeResponse]
 	removeLike         *connect.Client[pb.RemoveLikeRequest, pb.RemoveLikeResponse]
 	addBookmark        *connect.Client[pb.AddBookmarkRequest, pb.AddBookmarkResponse]
 	removeBookmark     *connect.Client[pb.RemoveBookmarkRequest, pb.RemoveBookmarkResponse]
 	addComment         *connect.Client[pb.AddCommentRequest, pb.AddCommentResponse]
 	removeComment      *connect.Client[pb.RemoveCommentRequest, pb.RemoveCommentResponse]
-	signUpUser         *connect.Client[pb.SignUpUserRequest, pb.SignUpUserResponse]
 	getUserInfo        *connect.Client[pb.GetUserInfoRequest, pb.GetUserInfoResponse]
-	deleteUser         *connect.Client[pb.DeleteUserRequest, pb.DeleteUserResponse]
+	signUpUser         *connect.Client[pb.SignUpUserRequest, pb.SignUpUserResponse]
 	updateUser         *connect.Client[pb.UpdateUserRequest, pb.UpdateUserResponse]
+	hardDeleteUser     *connect.Client[pb.HardDeleteUserRequest, pb.HardDeleteUserResponse]
+	softDeleteUser     *connect.Client[pb.SoftDeleteUserRequest, pb.SoftDeleteUserResponse]
 	getUserInfoByOAuth *connect.Client[pb.GetUserInfoByOAuthRequest, pb.GetUserInfoByOAuthResponse]
 }
 
@@ -259,6 +295,16 @@ func (c *dataFetcherServiceClient) GetPostsByUser(ctx context.Context, req *conn
 // AddPost calls rpc.DataFetcherService.AddPost.
 func (c *dataFetcherServiceClient) AddPost(ctx context.Context, req *connect.Request[pb.AddPostRequest]) (*connect.Response[pb.AddPostResponse], error) {
 	return c.addPost.CallUnary(ctx, req)
+}
+
+// HardDeletePost calls rpc.DataFetcherService.HardDeletePost.
+func (c *dataFetcherServiceClient) HardDeletePost(ctx context.Context, req *connect.Request[pb.HardDeletePostRequest]) (*connect.Response[pb.HardDeletePostResponse], error) {
+	return c.hardDeletePost.CallUnary(ctx, req)
+}
+
+// SoftDeletePost calls rpc.DataFetcherService.SoftDeletePost.
+func (c *dataFetcherServiceClient) SoftDeletePost(ctx context.Context, req *connect.Request[pb.SoftDeletePostRequest]) (*connect.Response[pb.SoftDeletePostResponse], error) {
+	return c.softDeletePost.CallUnary(ctx, req)
 }
 
 // AddLike calls rpc.DataFetcherService.AddLike.
@@ -291,24 +337,29 @@ func (c *dataFetcherServiceClient) RemoveComment(ctx context.Context, req *conne
 	return c.removeComment.CallUnary(ctx, req)
 }
 
-// SignUpUser calls rpc.DataFetcherService.SignUpUser.
-func (c *dataFetcherServiceClient) SignUpUser(ctx context.Context, req *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error) {
-	return c.signUpUser.CallUnary(ctx, req)
-}
-
 // GetUserInfo calls rpc.DataFetcherService.GetUserInfo.
 func (c *dataFetcherServiceClient) GetUserInfo(ctx context.Context, req *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error) {
 	return c.getUserInfo.CallUnary(ctx, req)
 }
 
-// DeleteUser calls rpc.DataFetcherService.DeleteUser.
-func (c *dataFetcherServiceClient) DeleteUser(ctx context.Context, req *connect.Request[pb.DeleteUserRequest]) (*connect.Response[pb.DeleteUserResponse], error) {
-	return c.deleteUser.CallUnary(ctx, req)
+// SignUpUser calls rpc.DataFetcherService.SignUpUser.
+func (c *dataFetcherServiceClient) SignUpUser(ctx context.Context, req *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error) {
+	return c.signUpUser.CallUnary(ctx, req)
 }
 
 // UpdateUser calls rpc.DataFetcherService.UpdateUser.
 func (c *dataFetcherServiceClient) UpdateUser(ctx context.Context, req *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error) {
 	return c.updateUser.CallUnary(ctx, req)
+}
+
+// HardDeleteUser calls rpc.DataFetcherService.HardDeleteUser.
+func (c *dataFetcherServiceClient) HardDeleteUser(ctx context.Context, req *connect.Request[pb.HardDeleteUserRequest]) (*connect.Response[pb.HardDeleteUserResponse], error) {
+	return c.hardDeleteUser.CallUnary(ctx, req)
+}
+
+// SoftDeleteUser calls rpc.DataFetcherService.SoftDeleteUser.
+func (c *dataFetcherServiceClient) SoftDeleteUser(ctx context.Context, req *connect.Request[pb.SoftDeleteUserRequest]) (*connect.Response[pb.SoftDeleteUserResponse], error) {
+	return c.softDeleteUser.CallUnary(ctx, req)
 }
 
 // GetUserInfoByOAuth calls rpc.DataFetcherService.GetUserInfoByOAuth.
@@ -322,16 +373,19 @@ type DataFetcherServiceHandler interface {
 	GetPostsByPostIds(context.Context, *connect.Request[pb.GetPostsByPostIdsRequest]) (*connect.Response[pb.GetPostsByPostIdsResponse], error)
 	GetPostsByUser(context.Context, *connect.Request[pb.GetPostsByUserIdRequest]) (*connect.Response[pb.GetPostsByUserIdResponse], error)
 	AddPost(context.Context, *connect.Request[pb.AddPostRequest]) (*connect.Response[pb.AddPostResponse], error)
+	HardDeletePost(context.Context, *connect.Request[pb.HardDeletePostRequest]) (*connect.Response[pb.HardDeletePostResponse], error)
+	SoftDeletePost(context.Context, *connect.Request[pb.SoftDeletePostRequest]) (*connect.Response[pb.SoftDeletePostResponse], error)
 	AddLike(context.Context, *connect.Request[pb.AddLikeRequest]) (*connect.Response[pb.AddLikeResponse], error)
 	RemoveLike(context.Context, *connect.Request[pb.RemoveLikeRequest]) (*connect.Response[pb.RemoveLikeResponse], error)
 	AddBookmark(context.Context, *connect.Request[pb.AddBookmarkRequest]) (*connect.Response[pb.AddBookmarkResponse], error)
 	RemoveBookmark(context.Context, *connect.Request[pb.RemoveBookmarkRequest]) (*connect.Response[pb.RemoveBookmarkResponse], error)
 	AddComment(context.Context, *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error)
 	RemoveComment(context.Context, *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error)
-	SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error)
 	GetUserInfo(context.Context, *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error)
-	DeleteUser(context.Context, *connect.Request[pb.DeleteUserRequest]) (*connect.Response[pb.DeleteUserResponse], error)
+	SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error)
 	UpdateUser(context.Context, *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error)
+	HardDeleteUser(context.Context, *connect.Request[pb.HardDeleteUserRequest]) (*connect.Response[pb.HardDeleteUserResponse], error)
+	SoftDeleteUser(context.Context, *connect.Request[pb.SoftDeleteUserRequest]) (*connect.Response[pb.SoftDeleteUserResponse], error)
 	GetUserInfoByOAuth(context.Context, *connect.Request[pb.GetUserInfoByOAuthRequest]) (*connect.Response[pb.GetUserInfoByOAuthResponse], error)
 }
 
@@ -363,6 +417,18 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 		DataFetcherServiceAddPostProcedure,
 		svc.AddPost,
 		connect.WithSchema(dataFetcherServiceAddPostMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataFetcherServiceHardDeletePostHandler := connect.NewUnaryHandler(
+		DataFetcherServiceHardDeletePostProcedure,
+		svc.HardDeletePost,
+		connect.WithSchema(dataFetcherServiceHardDeletePostMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataFetcherServiceSoftDeletePostHandler := connect.NewUnaryHandler(
+		DataFetcherServiceSoftDeletePostProcedure,
+		svc.SoftDeletePost,
+		connect.WithSchema(dataFetcherServiceSoftDeletePostMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	dataFetcherServiceAddLikeHandler := connect.NewUnaryHandler(
@@ -401,28 +467,34 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 		connect.WithSchema(dataFetcherServiceRemoveCommentMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
-	dataFetcherServiceSignUpUserHandler := connect.NewUnaryHandler(
-		DataFetcherServiceSignUpUserProcedure,
-		svc.SignUpUser,
-		connect.WithSchema(dataFetcherServiceSignUpUserMethodDescriptor),
-		connect.WithHandlerOptions(opts...),
-	)
 	dataFetcherServiceGetUserInfoHandler := connect.NewUnaryHandler(
 		DataFetcherServiceGetUserInfoProcedure,
 		svc.GetUserInfo,
 		connect.WithSchema(dataFetcherServiceGetUserInfoMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
-	dataFetcherServiceDeleteUserHandler := connect.NewUnaryHandler(
-		DataFetcherServiceDeleteUserProcedure,
-		svc.DeleteUser,
-		connect.WithSchema(dataFetcherServiceDeleteUserMethodDescriptor),
+	dataFetcherServiceSignUpUserHandler := connect.NewUnaryHandler(
+		DataFetcherServiceSignUpUserProcedure,
+		svc.SignUpUser,
+		connect.WithSchema(dataFetcherServiceSignUpUserMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	dataFetcherServiceUpdateUserHandler := connect.NewUnaryHandler(
 		DataFetcherServiceUpdateUserProcedure,
 		svc.UpdateUser,
 		connect.WithSchema(dataFetcherServiceUpdateUserMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataFetcherServiceHardDeleteUserHandler := connect.NewUnaryHandler(
+		DataFetcherServiceHardDeleteUserProcedure,
+		svc.HardDeleteUser,
+		connect.WithSchema(dataFetcherServiceHardDeleteUserMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataFetcherServiceSoftDeleteUserHandler := connect.NewUnaryHandler(
+		DataFetcherServiceSoftDeleteUserProcedure,
+		svc.SoftDeleteUser,
+		connect.WithSchema(dataFetcherServiceSoftDeleteUserMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	dataFetcherServiceGetUserInfoByOAuthHandler := connect.NewUnaryHandler(
@@ -441,6 +513,10 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 			dataFetcherServiceGetPostsByUserHandler.ServeHTTP(w, r)
 		case DataFetcherServiceAddPostProcedure:
 			dataFetcherServiceAddPostHandler.ServeHTTP(w, r)
+		case DataFetcherServiceHardDeletePostProcedure:
+			dataFetcherServiceHardDeletePostHandler.ServeHTTP(w, r)
+		case DataFetcherServiceSoftDeletePostProcedure:
+			dataFetcherServiceSoftDeletePostHandler.ServeHTTP(w, r)
 		case DataFetcherServiceAddLikeProcedure:
 			dataFetcherServiceAddLikeHandler.ServeHTTP(w, r)
 		case DataFetcherServiceRemoveLikeProcedure:
@@ -453,14 +529,16 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 			dataFetcherServiceAddCommentHandler.ServeHTTP(w, r)
 		case DataFetcherServiceRemoveCommentProcedure:
 			dataFetcherServiceRemoveCommentHandler.ServeHTTP(w, r)
-		case DataFetcherServiceSignUpUserProcedure:
-			dataFetcherServiceSignUpUserHandler.ServeHTTP(w, r)
 		case DataFetcherServiceGetUserInfoProcedure:
 			dataFetcherServiceGetUserInfoHandler.ServeHTTP(w, r)
-		case DataFetcherServiceDeleteUserProcedure:
-			dataFetcherServiceDeleteUserHandler.ServeHTTP(w, r)
+		case DataFetcherServiceSignUpUserProcedure:
+			dataFetcherServiceSignUpUserHandler.ServeHTTP(w, r)
 		case DataFetcherServiceUpdateUserProcedure:
 			dataFetcherServiceUpdateUserHandler.ServeHTTP(w, r)
+		case DataFetcherServiceHardDeleteUserProcedure:
+			dataFetcherServiceHardDeleteUserHandler.ServeHTTP(w, r)
+		case DataFetcherServiceSoftDeleteUserProcedure:
+			dataFetcherServiceSoftDeleteUserHandler.ServeHTTP(w, r)
 		case DataFetcherServiceGetUserInfoByOAuthProcedure:
 			dataFetcherServiceGetUserInfoByOAuthHandler.ServeHTTP(w, r)
 		default:
@@ -488,6 +566,14 @@ func (UnimplementedDataFetcherServiceHandler) AddPost(context.Context, *connect.
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.AddPost is not implemented"))
 }
 
+func (UnimplementedDataFetcherServiceHandler) HardDeletePost(context.Context, *connect.Request[pb.HardDeletePostRequest]) (*connect.Response[pb.HardDeletePostResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.HardDeletePost is not implemented"))
+}
+
+func (UnimplementedDataFetcherServiceHandler) SoftDeletePost(context.Context, *connect.Request[pb.SoftDeletePostRequest]) (*connect.Response[pb.SoftDeletePostResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.SoftDeletePost is not implemented"))
+}
+
 func (UnimplementedDataFetcherServiceHandler) AddLike(context.Context, *connect.Request[pb.AddLikeRequest]) (*connect.Response[pb.AddLikeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.AddLike is not implemented"))
 }
@@ -512,20 +598,24 @@ func (UnimplementedDataFetcherServiceHandler) RemoveComment(context.Context, *co
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.RemoveComment is not implemented"))
 }
 
-func (UnimplementedDataFetcherServiceHandler) SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.SignUpUser is not implemented"))
-}
-
 func (UnimplementedDataFetcherServiceHandler) GetUserInfo(context.Context, *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.GetUserInfo is not implemented"))
 }
 
-func (UnimplementedDataFetcherServiceHandler) DeleteUser(context.Context, *connect.Request[pb.DeleteUserRequest]) (*connect.Response[pb.DeleteUserResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.DeleteUser is not implemented"))
+func (UnimplementedDataFetcherServiceHandler) SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.SignUpUser is not implemented"))
 }
 
 func (UnimplementedDataFetcherServiceHandler) UpdateUser(context.Context, *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.UpdateUser is not implemented"))
+}
+
+func (UnimplementedDataFetcherServiceHandler) HardDeleteUser(context.Context, *connect.Request[pb.HardDeleteUserRequest]) (*connect.Response[pb.HardDeleteUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.HardDeleteUser is not implemented"))
+}
+
+func (UnimplementedDataFetcherServiceHandler) SoftDeleteUser(context.Context, *connect.Request[pb.SoftDeleteUserRequest]) (*connect.Response[pb.SoftDeleteUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.SoftDeleteUser is not implemented"))
 }
 
 func (UnimplementedDataFetcherServiceHandler) GetUserInfoByOAuth(context.Context, *connect.Request[pb.GetUserInfoByOAuthRequest]) (*connect.Response[pb.GetUserInfoByOAuthResponse], error) {

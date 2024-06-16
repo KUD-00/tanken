@@ -68,6 +68,10 @@ func TestUpdateUser(client pbconnect.DataFetcherServiceClient, userId string) {
 
 	getUserRes, err := client.GetUserInfo(context.Background(), connect.NewRequest(getUserReq))
 
+	if err != nil || getUserRes.Msg.Ok != 1 {
+		fmt.Errorf("error getting user info: %v", err)
+	}
+
 	expectedResponseUser := &pb.User{
 		UserId:             userId,
 		UserName:           "alice",
