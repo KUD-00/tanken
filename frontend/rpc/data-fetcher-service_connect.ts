@@ -3,8 +3,9 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddBookmarkRequest, AddBookmarkResponse, AddCommentRequest, AddCommentResponse, AddLikeRequest, AddLikeResponse, AddPostRequest, AddPostResponse, GetPostsByLocationRequest, GetPostsByLocationResponse, GetPostsByPostIdsRequest, GetPostsByPostIdsResponse, GetPostsByUserIdRequest, GetPostsByUserIdResponse, HardDeletePostRequest, HardDeletePostResponse, RemoveBookmarkRequest, RemoveBookmarkResponse, RemoveCommentRequest, RemoveCommentResponse, RemoveLikeRequest, RemoveLikeResponse, SoftDeletePostRequest, SoftDeletePostResponse } from "./post_pb.js";
+import { TestConnectionRequest, TestConnectionResponse } from "./data-fetcher-service_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
+import { AddBookmarkRequest, AddBookmarkResponse, AddCommentRequest, AddCommentResponse, AddLikeRequest, AddLikeResponse, AddPostRequest, AddPostResponse, GetPostsByLocationRequest, GetPostsByLocationResponse, GetPostsByPostIdsRequest, GetPostsByPostIdsResponse, GetPostsByUserIdRequest, GetPostsByUserIdResponse, HardDeletePostRequest, HardDeletePostResponse, RemoveBookmarkRequest, RemoveBookmarkResponse, RemoveCommentRequest, RemoveCommentResponse, RemoveLikeRequest, RemoveLikeResponse, SoftDeletePostRequest, SoftDeletePostResponse } from "./post_pb.js";
 import { GetUserInfoByOAuthRequest, GetUserInfoByOAuthResponse, GetUserInfoRequest, GetUserInfoResponse, HardDeleteUserRequest, HardDeleteUserResponse, SignUpUserRequest, SignUpUserResponse, SoftDeleteUserRequest, SoftDeleteUserResponse, UpdateUserRequest, UpdateUserResponse } from "./user_pb.js";
 
 /**
@@ -13,6 +14,15 @@ import { GetUserInfoByOAuthRequest, GetUserInfoByOAuthResponse, GetUserInfoReque
 export const DataFetcherService = {
   typeName: "rpc.DataFetcherService",
   methods: {
+    /**
+     * @generated from rpc rpc.DataFetcherService.TestConnection
+     */
+    testConnection: {
+      name: "TestConnection",
+      I: TestConnectionRequest,
+      O: TestConnectionResponse,
+      kind: MethodKind.Unary,
+    },
     /**
      * @generated from rpc rpc.DataFetcherService.GetPostsByLocation
      */

@@ -7,7 +7,16 @@ import "general.proto";
 import "post.proto";
 import "user.proto";
 
+message TestConnectionRequest {
+    double foo = 1;
+}
+
+message TestConnectionResponse {
+    bool ok = 1;
+}
+
 service DataFetcherService{
+  rpc TestConnection(TestConnectionRequest) returns (TestConnectionResponse) {}
   rpc GetPostsByLocation(GetPostsByLocationRequest) returns (GetPostsByLocationResponse) {}
   rpc GetPostsByPostIds(GetPostsByPostIdsRequest) returns (GetPostsByPostIdsResponse) {}
   rpc GetPostsByUser(GetPostsByUserIdRequest) returns (GetPostsByUserIdResponse) {}

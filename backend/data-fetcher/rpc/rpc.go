@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	"tanken/backend/common/cache"
 	database "tanken/backend/common/db"
@@ -267,24 +268,33 @@ func (s *server) UpdateUser(ctx context.Context, req *connect.Request[pb.UpdateU
 	return connect.NewResponse(&pb.UpdateUserResponse{Ok: 1}), nil
 }
 
-func StartServer(geo_postid_rdb *redis.Client, post_cache_rdb *redis.Client, db *sql.DB) {
-	// func StartServer(geo_postid_rdb *redis.Client, post_cache_rdb *redis.Client, db *sql.DB, uploader *s3manager.Uploader) {
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		currentTime := time.Now().Format(time.RFC1123)
+		fmt.Printf("Request received at: %s, Path: %s\n", currentTime, r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func StartServer(geoCache *redis.Client, postCache *redis.Client, userCache *redis.Client, db *sql.DB) {
 	srv := &server{
-		geoCache:  cache.NewGeoRedisCacheService(geo_postid_rdb),
-		postCache: cache.NewPostRedisCacheService(post_cache_rdb),
+		geoCache:  cache.NewGeoRedisCacheService(geoCache),
+		postCache: cache.NewPostRedisCacheService(postCache),
+		userCache: cache.NewUserRedisCacheService(userCache),
 		db:        database.NewPostgresDatabaseService(db),
 		// 		uploader:       uploader,
 	}
 
 	mux := http.NewServeMux()
 	path, handler := pbconnect.NewDataFetcherServiceHandler(srv)
-	fmt.Println("path:", path)
-	// mux.Handle(path, logRequest(handler))
+
 	mux.Handle(path, handler)
+
+	loggedMux := loggingMiddleware(mux)
 
 	http.ListenAndServe(
 		":50051",
 		// Use h2c so we can serve HTTP/2 without TLS.
-		h2c.NewHandler(mux, &http2.Server{}),
+		h2c.NewHandler(loggedMux, &http2.Server{}),
 	)
 }

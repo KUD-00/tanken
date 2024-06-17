@@ -126,5 +126,5 @@ func main() {
 	// uploader := initS3(sess)
 
 	// rpc.StartServer(geo_postid_rdb, post_cache_rdb, db, uploader)
-	rpc.StartServer(geo_postid_rdb, post_cache_rdb, db)
+	rpc.StartServer(geo_postid_rdb, post_cache_rdb, user_cache_rdb, db)
 }
