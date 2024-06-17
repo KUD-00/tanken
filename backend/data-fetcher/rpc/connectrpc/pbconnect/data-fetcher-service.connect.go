@@ -33,6 +33,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// DataFetcherServiceTestConnectionProcedure is the fully-qualified name of the DataFetcherService's
+	// TestConnection RPC.
+	DataFetcherServiceTestConnectionProcedure = "/rpc.DataFetcherService/TestConnection"
 	// DataFetcherServiceGetPostsByLocationProcedure is the fully-qualified name of the
 	// DataFetcherService's GetPostsByLocation RPC.
 	DataFetcherServiceGetPostsByLocationProcedure = "/rpc.DataFetcherService/GetPostsByLocation"
@@ -92,6 +95,7 @@ const (
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
 	dataFetcherServiceServiceDescriptor                  = pb.File_data_fetcher_service_proto.Services().ByName("DataFetcherService")
+	dataFetcherServiceTestConnectionMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("TestConnection")
 	dataFetcherServiceGetPostsByLocationMethodDescriptor = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByLocation")
 	dataFetcherServiceGetPostsByPostIdsMethodDescriptor  = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByPostIds")
 	dataFetcherServiceGetPostsByUserMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByUser")
@@ -114,6 +118,7 @@ var (
 
 // DataFetcherServiceClient is a client for the rpc.DataFetcherService service.
 type DataFetcherServiceClient interface {
+	TestConnection(context.Context, *connect.Request[pb.TestConnectionRequest]) (*connect.Response[pb.TestConnectionResponse], error)
 	GetPostsByLocation(context.Context, *connect.Request[pb.GetPostsByLocationRequest]) (*connect.Response[pb.GetPostsByLocationResponse], error)
 	GetPostsByPostIds(context.Context, *connect.Request[pb.GetPostsByPostIdsRequest]) (*connect.Response[pb.GetPostsByPostIdsResponse], error)
 	GetPostsByUser(context.Context, *connect.Request[pb.GetPostsByUserIdRequest]) (*connect.Response[pb.GetPostsByUserIdResponse], error)
@@ -144,6 +149,12 @@ type DataFetcherServiceClient interface {
 func NewDataFetcherServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) DataFetcherServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &dataFetcherServiceClient{
+		testConnection: connect.NewClient[pb.TestConnectionRequest, pb.TestConnectionResponse](
+			httpClient,
+			baseURL+DataFetcherServiceTestConnectionProcedure,
+			connect.WithSchema(dataFetcherServiceTestConnectionMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		getPostsByLocation: connect.NewClient[pb.GetPostsByLocationRequest, pb.GetPostsByLocationResponse](
 			httpClient,
 			baseURL+DataFetcherServiceGetPostsByLocationProcedure,
@@ -257,6 +268,7 @@ func NewDataFetcherServiceClient(httpClient connect.HTTPClient, baseURL string, 
 
 // dataFetcherServiceClient implements DataFetcherServiceClient.
 type dataFetcherServiceClient struct {
+	testConnection     *connect.Client[pb.TestConnectionRequest, pb.TestConnectionResponse]
 	getPostsByLocation *connect.Client[pb.GetPostsByLocationRequest, pb.GetPostsByLocationResponse]
 	getPostsByPostIds  *connect.Client[pb.GetPostsByPostIdsRequest, pb.GetPostsByPostIdsResponse]
 	getPostsByUser     *connect.Client[pb.GetPostsByUserIdRequest, pb.GetPostsByUserIdResponse]
@@ -275,6 +287,11 @@ type dataFetcherServiceClient struct {
 	hardDeleteUser     *connect.Client[pb.HardDeleteUserRequest, pb.HardDeleteUserResponse]
 	softDeleteUser     *connect.Client[pb.SoftDeleteUserRequest, pb.SoftDeleteUserResponse]
 	getUserInfoByOAuth *connect.Client[pb.GetUserInfoByOAuthRequest, pb.GetUserInfoByOAuthResponse]
+}
+
+// TestConnection calls rpc.DataFetcherService.TestConnection.
+func (c *dataFetcherServiceClient) TestConnection(ctx context.Context, req *connect.Request[pb.TestConnectionRequest]) (*connect.Response[pb.TestConnectionResponse], error) {
+	return c.testConnection.CallUnary(ctx, req)
 }
 
 // GetPostsByLocation calls rpc.DataFetcherService.GetPostsByLocation.
@@ -369,6 +386,7 @@ func (c *dataFetcherServiceClient) GetUserInfoByOAuth(ctx context.Context, req *
 
 // DataFetcherServiceHandler is an implementation of the rpc.DataFetcherService service.
 type DataFetcherServiceHandler interface {
+	TestConnection(context.Context, *connect.Request[pb.TestConnectionRequest]) (*connect.Response[pb.TestConnectionResponse], error)
 	GetPostsByLocation(context.Context, *connect.Request[pb.GetPostsByLocationRequest]) (*connect.Response[pb.GetPostsByLocationResponse], error)
 	GetPostsByPostIds(context.Context, *connect.Request[pb.GetPostsByPostIdsRequest]) (*connect.Response[pb.GetPostsByPostIdsResponse], error)
 	GetPostsByUser(context.Context, *connect.Request[pb.GetPostsByUserIdRequest]) (*connect.Response[pb.GetPostsByUserIdResponse], error)
@@ -395,6 +413,12 @@ type DataFetcherServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	dataFetcherServiceTestConnectionHandler := connect.NewUnaryHandler(
+		DataFetcherServiceTestConnectionProcedure,
+		svc.TestConnection,
+		connect.WithSchema(dataFetcherServiceTestConnectionMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	dataFetcherServiceGetPostsByLocationHandler := connect.NewUnaryHandler(
 		DataFetcherServiceGetPostsByLocationProcedure,
 		svc.GetPostsByLocation,
@@ -505,6 +529,8 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 	)
 	return "/rpc.DataFetcherService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case DataFetcherServiceTestConnectionProcedure:
+			dataFetcherServiceTestConnectionHandler.ServeHTTP(w, r)
 		case DataFetcherServiceGetPostsByLocationProcedure:
 			dataFetcherServiceGetPostsByLocationHandler.ServeHTTP(w, r)
 		case DataFetcherServiceGetPostsByPostIdsProcedure:
@@ -549,6 +575,10 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 
 // UnimplementedDataFetcherServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedDataFetcherServiceHandler struct{}
+
+func (UnimplementedDataFetcherServiceHandler) TestConnection(context.Context, *connect.Request[pb.TestConnectionRequest]) (*connect.Response[pb.TestConnectionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.TestConnection is not implemented"))
+}
 
 func (UnimplementedDataFetcherServiceHandler) GetPostsByLocation(context.Context, *connect.Request[pb.GetPostsByLocationRequest]) (*connect.Response[pb.GetPostsByLocationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.GetPostsByLocation is not implemented"))
