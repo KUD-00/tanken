@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-cache
+  name: usercache
 spec:
   selector:
     matchLabels:
-      app: user-cache
+      app: usercache
   replicas: 1
   template:
     metadata:
       labels:
-        app: user-cache
+        app: usercache
     spec:
       containers:
       - name: redis
@@ -50,10 +50,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-cache
+  name: usercache
 spec:
   ports:
   - port: 6379
     targetPort: 6379
   selector:
-    app: user-cache
+    app: usercache

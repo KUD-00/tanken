@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	datafetcher "tanken/backend/test/data-fetcher"
-	"tanken/backend/test/rpc/connectrpc/pbconnect"
+	datafetcher "tanken/test/data-fetcher"
+	"tanken/test/rpc/connectrpc/pbconnect"
 )
 
 func main() {

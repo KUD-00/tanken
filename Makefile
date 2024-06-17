@@ -49,5 +49,16 @@ initialize_local_new_k8s_cluster:
 initialize_k8s_infras:
 	@kubectl apply -f infra/k8s-local-test/cache/geocache.yaml
 	@kubectl apply -f infra/k8s-local-test/cache/postcache.yaml
+	@kubectl apply -f infra/k8s-local-test/cache/usercache.yaml
 	@kubectl apply -f infra/k8s-local-test/database/database.yaml
-	@kubectl apply -f infra/k8s-local-test/database/migrate-job.yaml
+	@kubectl apply -f infra/k8s-local-test/jobs/db-migrate.yaml
+	@kubectl apply -f infra/k8s-local-test/jobs/test.yaml
+
+initialize_k8s_services:
+	@kubectl apply -f infra/k8s-local-test/services/data-fetcher.yaml
+	@kubectl apply -f infra/k8s-local-test/services/test.yaml
+
+update_test_image:
+	@docker build -f test/Dockerfile -t test:local .
+	@kind load docker-image --name tanken-local-test test:local
+	@kubectl delete pod -l app=test

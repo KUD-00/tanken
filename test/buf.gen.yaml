@@ -9,4 +9,4 @@ plugins:
 managed:
   enabled: true
   go_package_prefix:
-    default: tanken/backend/test/rpc/pb
+    default: tanken/test/rpc/pb

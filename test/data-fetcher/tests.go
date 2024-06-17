@@ -3,8 +3,8 @@ package datafetcher
 import (
 	"context"
 	"fmt"
-	"tanken/backend/test/rpc/connectrpc/pbconnect"
-	"tanken/backend/test/rpc/pb"
+	"tanken/test/rpc/connectrpc/pbconnect"
+	"tanken/test/rpc/pb"
 
 	"connectrpc.com/connect"
 )

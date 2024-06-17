@@ -24,7 +24,7 @@ spec:
         - name: AWS_REGION
           value: "ap-northeast-1"
         - name: POSTGRES_HOST
-          value: "postgres"
+          value: "database-service"
         - name: POSTGRES_USER
           value: "postgres"
         - name: POSTGRES_PASSWORD

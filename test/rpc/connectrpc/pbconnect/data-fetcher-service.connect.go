@@ -10,7 +10,7 @@ import (
 	errors "errors"
 	http "net/http"
 	strings "strings"
-	pb "tanken/backend/test/rpc/pb"
+	pb "tanken/test/rpc/pb"
 )
 
 // This is a compile-time assertion to ensure that this generated file and the connect package are
