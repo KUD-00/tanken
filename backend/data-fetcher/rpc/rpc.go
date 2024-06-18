@@ -268,6 +268,13 @@ func (s *server) UpdateUser(ctx context.Context, req *connect.Request[pb.UpdateU
 	return connect.NewResponse(&pb.UpdateUserResponse{Ok: 1}), nil
 }
 
+func (s *server) TestConnection(ctx context.Context, req *connect.Request[pb.TestConnectionRequest]) (*connect.Response[pb.TestConnectionResponse], error) {
+	if req.Msg.Foo == 69.69 {
+		return connect.NewResponse(&pb.TestConnectionResponse{Ok: true}), nil
+	}
+	return connect.NewResponse(&pb.TestConnectionResponse{Ok: false}), nil
+}
+
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		currentTime := time.Now().Format(time.RFC1123)
