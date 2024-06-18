@@ -3,15 +3,21 @@ package main
 import (
 	"net/http"
 
-	datafetcher "tanken/backend/test/data-fetcher"
-	"tanken/backend/test/rpc/connectrpc/pbconnect"
+	datafetcher "tanken/integreted-local-tests/data-fetcher"
+	"tanken/integreted-local-tests/rpc/connectrpc/pbconnect"
 )
 
 func main() {
 	client := pbconnect.NewDataFetcherServiceClient(
 		http.DefaultClient,
-		"data-fetcher:50051",
+		"http://data-fetcher:50051",
 	)
+
+	err := datafetcher.TestConnection(client)
+
+	if err != nil {
+		panic(err)
+	}
 
 	userId := datafetcher.TestSignUpUser(client)
 

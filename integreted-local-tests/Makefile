@@ -5,7 +5,7 @@ PATH := $(GOPATH)/bin:$(PATH)
 update_proto: clean_proto_buf generate_proto_buf
 
 generate_proto_buf:
-	@buf generate ../../proto
+	@buf generate ../proto
 	@echo "Proto files compiled using buf to Go files successfully."
 
 clean_proto_buf:

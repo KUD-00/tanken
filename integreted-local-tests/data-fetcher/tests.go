@@ -3,11 +3,23 @@ package datafetcher
 import (
 	"context"
 	"fmt"
-	"tanken/backend/test/rpc/connectrpc/pbconnect"
-	"tanken/backend/test/rpc/pb"
+	"tanken/integreted-local-tests/rpc/connectrpc/pbconnect"
+	"tanken/integreted-local-tests/rpc/pb"
 
 	"connectrpc.com/connect"
 )
+
+func TestConnection(client pbconnect.DataFetcherServiceClient) error {
+	req := &pb.TestConnectionRequest{Foo: 69.69}
+
+	res, err := client.TestConnection(context.Background(), connect.NewRequest(req))
+
+	if err != nil || res.Msg.Ok != true {
+		return fmt.Errorf("error testing connection: %v", err)
+	}
+
+	return nil
+}
 
 func TestSignUpUser(client pbconnect.DataFetcherServiceClient) string {
 	req := &pb.SignUpUserRequest{

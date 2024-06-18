@@ -56,9 +56,9 @@ initialize_k8s_infras:
 
 initialize_k8s_services:
 	@kubectl apply -f infra/k8s-local-test/services/data-fetcher.yaml
-	@kubectl apply -f infra/k8s-local-test/services/test.yaml
 
 update_test_image:
-	@docker build -f test/Dockerfile -t test:local .
+	@docker build -f integreted-local-tests/Dockerfile -t test:local .
 	@kind load docker-image --name tanken-local-test test:local
-	@kubectl delete pod -l app=test
+	@kubectl delete job test-job
+	@kubectl apply -f infra/k8s-local-test/jobs/test.yaml
