@@ -14,14 +14,22 @@ func main() {
 	)
 
 	err := datafetcher.TestConnection(client)
-
 	if err != nil {
 		panic(err)
 	}
 
-	userId := datafetcher.TestSignUpUser(client)
+	userId, err := datafetcher.TestSignUpUser(client)
+	if err != nil {
+		panic(err)
+	}
 
-	datafetcher.TestGetUserInfo(client, userId)
+	err = datafetcher.TestGetUserInfo(client, userId)
+	if err != nil {
+		panic(err)
+	}
 
-	datafetcher.TestUpdateUser(client, userId)
+	err = datafetcher.TestUpdateUser(client, userId)
+	if err != nil {
+		panic(err)
+	}
 }

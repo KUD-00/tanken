@@ -3,6 +3,7 @@ package datafetcher
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"tanken/integreted-local-tests/rpc/connectrpc/pbconnect"
 	"tanken/integreted-local-tests/rpc/pb"
 
@@ -21,7 +22,7 @@ func TestConnection(client pbconnect.DataFetcherServiceClient) error {
 	return nil
 }
 
-func TestSignUpUser(client pbconnect.DataFetcherServiceClient) string {
+func TestSignUpUser(client pbconnect.DataFetcherServiceClient) (string, error) {
 	req := &pb.SignUpUserRequest{
 		Email:              "alice@gotanken.com",
 		Name:               "alice",
@@ -33,13 +34,13 @@ func TestSignUpUser(client pbconnect.DataFetcherServiceClient) string {
 	res, err := client.SignUpUser(context.Background(), connect.NewRequest(req))
 
 	if err != nil || res.Msg.Ok != 1 {
-		fmt.Errorf("error signing up user: %v", err)
+		return "", fmt.Errorf("error signing up user: %v, response: %v", err, res.Msg.Msg)
 	}
 
-	return res.Msg.UserId
+	return res.Msg.UserId, nil
 }
 
-func TestGetUserInfo(client pbconnect.DataFetcherServiceClient, userId string) {
+func TestGetUserInfo(client pbconnect.DataFetcherServiceClient, userId string) error {
 	req := &pb.GetUserInfoRequest{
 		UserId: userId,
 	}
@@ -47,7 +48,7 @@ func TestGetUserInfo(client pbconnect.DataFetcherServiceClient, userId string) {
 	res, err := client.GetUserInfo(context.Background(), connect.NewRequest(req))
 
 	if err != nil || res.Msg.Ok != 1 {
-		fmt.Errorf("error getting user info: %v", err)
+		return fmt.Errorf("error getting user info: %v, response: %v", err, res.Msg.Msg)
 	}
 
 	expectedResponseUser := &pb.User{
@@ -58,20 +59,23 @@ func TestGetUserInfo(client pbconnect.DataFetcherServiceClient, userId string) {
 		Subscribed:         0,
 	}
 
-	if res.Msg.User != expectedResponseUser {
-		fmt.Errorf("expected response user: %v, got: %v", expectedResponseUser, res.Msg.User)
+	if reflect.DeepEqual(res.Msg.User, expectedResponseUser) {
+		return fmt.Errorf("expected response user: %v, got: %v", expectedResponseUser, res.Msg.User)
 	}
+
+	return nil
 }
 
-func TestUpdateUser(client pbconnect.DataFetcherServiceClient, userId string) {
+func TestUpdateUser(client pbconnect.DataFetcherServiceClient, userId string) error {
 	updateUserReq := &pb.UpdateUserRequest{
-		Bio: "this bio is changed",
+		UserId: userId,
+		Bio:    "this bio is changed",
 	}
 
 	updateUserRes, err := client.UpdateUser(context.Background(), connect.NewRequest(updateUserReq))
 
 	if err != nil || updateUserRes.Msg.Ok != 1 {
-		fmt.Errorf("error updating user: %v", err)
+		return fmt.Errorf("error updating user: %v, response: %v", err, updateUserRes.Msg.Msg)
 	}
 
 	getUserReq := &pb.GetUserInfoRequest{
@@ -81,7 +85,7 @@ func TestUpdateUser(client pbconnect.DataFetcherServiceClient, userId string) {
 	getUserRes, err := client.GetUserInfo(context.Background(), connect.NewRequest(getUserReq))
 
 	if err != nil || getUserRes.Msg.Ok != 1 {
-		fmt.Errorf("error getting user info: %v", err)
+		return fmt.Errorf("error getting user info: %v, response: %v", err, getUserRes.Msg.Msg)
 	}
 
 	expectedResponseUser := &pb.User{
@@ -92,7 +96,9 @@ func TestUpdateUser(client pbconnect.DataFetcherServiceClient, userId string) {
 		Subscribed:         0,
 	}
 
-	if getUserRes.Msg.User != expectedResponseUser {
-		fmt.Errorf("expected response user: %v, got: %v", expectedResponseUser, getUserRes.Msg.User)
+	if reflect.DeepEqual(getUserRes.Msg.User, expectedResponseUser) {
+		return fmt.Errorf("expected response user: %v, got: %v", expectedResponseUser, getUserRes.Msg.User)
 	}
+
+	return nil
 }
