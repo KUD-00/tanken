@@ -611,3 +611,79 @@ func TestPostgresDatabaseService_DeleteCommentById(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestPostgresDatabaseService_GetUserById(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	service := NewPostgresDatabaseService(db)
+
+	expectedUser := &types.User{
+		UserId:             "user1",
+		Username:           "username1",
+		Bio:                "This is a bio",
+		ProfilePictureLink: "http://example.com/profile.jpg",
+		Subscribed:         int64(1),
+	}
+
+	mock.ExpectQuery("SELECT user_id, username, bio, profile_picture_link, subscribed FROM users WHERE user_id = \\$1").
+		WithArgs("user1").
+		WillReturnRows(sqlmock.NewRows([]string{"user_id", "username", "bio", "profile_picture_link", "subscribed"}).
+			AddRow(expectedUser.UserId, expectedUser.Username, expectedUser.Bio, expectedUser.ProfilePictureLink, expectedUser.Subscribed))
+
+	ctx := context.Background()
+	user, err := service.GetUserById(ctx, "user1")
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedUser, user)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestPostgresDatabaseService_SetUserById(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	service := NewPostgresDatabaseService(db)
+
+	user := &types.UserPtr{
+		Username:           strPtr("new_username"),
+		Bio:                strPtr("new_bio"),
+		ProfilePictureLink: strPtr("http://example.com/new_profile.jpg"),
+		Subscribed:         int64Ptr(int64(1)),
+		Email:              strPtr("new_email@example.com"),
+		OauthProvider:      strPtr("new_oauth_provider"),
+	}
+
+	mock.ExpectExec(`INSERT INTO users \(user_id, username, bio, profile_picture_link, subscribed, email, oauth_provider\) VALUES \(\$1, \$2, \$3, \$4, \$5, \$6, \$7\) ON CONFLICT \(user_id\) DO UPDATE SET username = EXCLUDED.username, bio = EXCLUDED.bio, profile_picture_link = EXCLUDED.profile_picture_link, subscribed = EXCLUDED.subscribed, email = EXCLUDED.email, oauth_provider = EXCLUDED.oauth_provider`).
+		WithArgs("user1", "new_username", "new_bio", "http://example.com/new_profile.jpg", int64(1), "new_email@example.com", "new_oauth_provider").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	ctx := context.Background()
+	err = service.SetUserById(ctx, "user1", user)
+
+	assert.NoError(t, err)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+// 辅助函数
+func strPtr(s string) *string {
+	return &s
+}
+
+func boolPtr(b bool) *bool {
+	return &b
+}
+
+func int64Ptr(i int64) *int64 {
+	return &i
+}

@@ -27,21 +27,29 @@ func (r *UserRedisCacheService) GetUser(ctx context.Context, userId string) (*ty
 	}
 
 	return &types.User{
-		UserId:     user["user_id"],
-		Username:   user["username"],
-		Bio:        user["bio"],
-		Avatar:     user["avatar"],
-		Subscribed: utils.StringToInt64(user["subscribed"], 0),
+		UserId:             userId,
+		Username:           user["username"],
+		Bio:                user["bio"],
+		ProfilePictureLink: user["profilePictureLink"],
+		Subscribed:         utils.StringToInt64(user["subscribed"], 0),
 	}, nil
 }
 
 func (r *UserRedisCacheService) SetUserOptional(ctx context.Context, userId string, user *types.UserPtr) error {
+	var changed bool
+
+	if user.Changed == nil {
+		changed = false
+	} else {
+		changed = *user.Changed
+	}
+
 	_, err := r.client.HSet(ctx, "user:"+userId, map[string]interface{}{
-		"username":   *user.Username,
-		"bio":        *user.Bio,
-		"avatar":     *user.Avatar,
-		"subscribed": *user.Subscribed,
-		"changed":    *user.Changed,
+		"username":           *user.Username,
+		"bio":                *user.Bio,
+		"profilePictureLink": *user.ProfilePictureLink,
+		"subscribed":         *user.Subscribed,
+		"changed":            changed,
 	}).Result()
 
 	return err
@@ -49,11 +57,11 @@ func (r *UserRedisCacheService) SetUserOptional(ctx context.Context, userId stri
 
 func (r *UserRedisCacheService) SetUser(ctx context.Context, userId string, user *types.User) error {
 	_, err := r.client.HSet(ctx, "user:"+userId, map[string]interface{}{
-		"user_id":    user.UserId,
-		"username":   user.Username,
-		"bio":        user.Bio,
-		"avatar":     user.Avatar,
-		"subscribed": user.Subscribed,
+		"user_id":            user.UserId,
+		"username":           user.Username,
+		"bio":                user.Bio,
+		"profilePictureLink": user.ProfilePictureLink,
+		"subscribed":         user.Subscribed,
 	}).Result()
 
 	return err

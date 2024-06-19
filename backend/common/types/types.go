@@ -54,25 +54,25 @@ type Comment struct {
 }
 
 type User struct {
-	UserId        string
-	Username      string
-	Email         string
-	Bio           string
-	CreatedAt     int64
-	Subscribed    int64
-	Avatar        string //TODO: change this to profile_picture_link
-	OauthProvider string
+	UserId             string
+	Username           string
+	Email              string
+	Bio                string
+	CreatedAt          int64
+	Subscribed         int64
+	ProfilePictureLink string
+	OauthProvider      string
 }
 
 type UserPtr struct {
 	// for edit
-	Username      *string
-	Email         *string
-	Bio           *string
-	Subscribed    *int64
-	Avatar        *string
-	OauthProvider *string
-	Changed       *bool
+	Username           *string
+	Email              *string
+	Bio                *string
+	Subscribed         *int64
+	ProfilePictureLink *string
+	OauthProvider      *string
+	Changed            *bool
 }
 
 type UserSets struct {

@@ -48,6 +48,6 @@ func CommonUserToPbUser(commonUser *types.User) *pb.User {
 		UserName:           commonUser.Username,
 		Bio:                commonUser.Bio,
 		Subscribed:         commonUser.Subscribed,
-		ProfilePictureLink: commonUser.Avatar,
+		ProfilePictureLink: commonUser.ProfilePictureLink,
 	}
 }

@@ -467,11 +467,11 @@ func (p *PostgresDatabaseService) DeleteCommentById(ctx context.Context, comment
 func (p *PostgresDatabaseService) GetUserById(ctx context.Context, userID string) (*types.User, error) {
 	var user types.User
 
-	err := p.db.QueryRowContext(ctx, "SELECT user_id, username, bio, avatar, subscribed FROM users WHERE user_id = $1", userID).Scan(
+	err := p.db.QueryRowContext(ctx, "SELECT user_id, username, bio, profile_picture_link, subscribed FROM users WHERE user_id = $1", userID).Scan(
 		&user.UserId,
 		&user.Username,
 		&user.Bio,
-		&user.Avatar,
+		&user.ProfilePictureLink,
 		&user.Subscribed,
 	)
 	if err != nil {
@@ -503,16 +503,28 @@ func (p *PostgresDatabaseService) SetUserById(ctx context.Context, userID string
 		updates += " bio = EXCLUDED.bio,"
 		index++
 	}
-	if user.Avatar != nil {
-		query += ", avatar"
-		values = append(values, *user.Avatar)
-		updates += " avatar = EXCLUDED.avatar,"
+	if user.ProfilePictureLink != nil {
+		query += ", profile_picture_link"
+		values = append(values, *user.ProfilePictureLink)
+		updates += " profile_picture_link = EXCLUDED.profile_picture_link,"
 		index++
 	}
 	if user.Subscribed != nil {
 		query += ", subscribed"
 		values = append(values, *user.Subscribed)
 		updates += " subscribed = EXCLUDED.subscribed,"
+		index++
+	}
+	if user.Email != nil {
+		query += ", email"
+		values = append(values, *user.Email)
+		updates += " email = EXCLUDED.email,"
+		index++
+	}
+	if user.OauthProvider != nil {
+		query += ", oauth_provider"
+		values = append(values, *user.OauthProvider)
+		updates += " oauth_provider = EXCLUDED.oauth_provider,"
 		index++
 	}
 

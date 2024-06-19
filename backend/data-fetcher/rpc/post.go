@@ -22,7 +22,7 @@ import (
 // TODO: Do I need `defer pipe.Close()`?
 func generateUniquePostID(ctx context.Context, rs *cache.GeoRedisCacheService) (string, error) {
 	for {
-		id := uuid.NewString()[:8]
+		id := uuid.NewString()
 		exists, err := rs.IsKeyExist(ctx, "post:"+id)
 
 		if err != nil {

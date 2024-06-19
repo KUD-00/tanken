@@ -600,19 +600,19 @@ func TestPostRedisCacheService_SetUser(t *testing.T) {
 
 	userID := "user123"
 	user := &types.User{
-		UserId:     "user123",
-		Username:   "testuser",
-		Avatar:     "avatar.png",
-		Bio:        "This is a test user",
-		Subscribed: 1,
+		UserId:             "user123",
+		Username:           "testuser",
+		ProfilePictureLink: "avatar.png",
+		Bio:                "This is a test user",
+		Subscribed:         1,
 	}
 
 	userMap := map[string]interface{}{
-		"userId":     user.UserId,
-		"username":   user.Username,
-		"avatar":     user.Avatar,
-		"bio":        user.Bio,
-		"subscribed": user.Subscribed,
+		"userId":             user.UserId,
+		"username":           user.Username,
+		"profilePictureLink": user.ProfilePictureLink,
+		"bio":                user.Bio,
+		"subscribed":         user.Subscribed,
 	}
 
 	mock.ExpectHSet(utils.UserPrefix+userID, userMap).SetVal(1)
@@ -631,11 +631,11 @@ func TestPostRedisCacheService_GetUserCmd(t *testing.T) {
 
 	userID := "user123"
 	expectedResult := map[string]string{
-		"userId":     "user123",
-		"username":   "testuser",
-		"avatar":     "avatar.png",
-		"bio":        "This is a test user",
-		"subscribed": strconv.FormatInt(1, 10),
+		"userId":             "user123",
+		"username":           "testuser",
+		"profilePictureLink": "avatar.png",
+		"bio":                "This is a test user",
+		"subscribed":         strconv.FormatInt(1, 10),
 	}
 
 	ctx, pipe := service.NewPipe(ctx)
@@ -663,11 +663,11 @@ func TestPostRedisCacheService_GetUser(t *testing.T) {
 
 	userID := "user123"
 	expectedResult := map[string]string{
-		"userId":     "user123",
-		"username":   "testuser",
-		"avatar":     "avatar.png",
-		"bio":        "This is a test user",
-		"subscribed": strconv.FormatInt(1, 10),
+		"userId":             "user123",
+		"username":           "testuser",
+		"profilePictureLink": "avatar.png",
+		"bio":                "This is a test user",
+		"subscribed":         strconv.FormatInt(1, 10),
 	}
 
 	mock.ExpectHGetAll(utils.UserPrefix + userID).SetVal(expectedResult)
@@ -677,11 +677,11 @@ func TestPostRedisCacheService_GetUser(t *testing.T) {
 	assert.NotNil(t, result)
 
 	expectedUser := &types.User{
-		UserId:     "user123",
-		Username:   "testuser",
-		Avatar:     "avatar.png",
-		Bio:        "This is a test user",
-		Subscribed: 1,
+		UserId:             "user123",
+		Username:           "testuser",
+		ProfilePictureLink: "avatar.png",
+		Bio:                "This is a test user",
+		Subscribed:         1,
 	}
 	assert.Equal(t, expectedUser, result)
 
