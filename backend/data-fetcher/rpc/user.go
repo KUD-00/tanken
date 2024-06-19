@@ -16,7 +16,7 @@ import (
 // TODO: Do I need `defer pipe.Close()`?
 func generateUniqueUserID(ctx context.Context, db database.DatabaseService) (string, error) {
 	for {
-		id := uuid.NewString()[:8]
+		id := uuid.NewString()
 		user, err := db.GetUserById(ctx, id)
 		if err != nil {
 			return "Error generating user id", err

@@ -351,11 +351,11 @@ func (r *PostRedisCacheService) RemoveComment(ctx context.Context, commentID str
 
 func (r *PostRedisCacheService) SetUser(ctx context.Context, userID string, user *types.User) error {
 	userMap := map[string]interface{}{
-		"userId":     user.UserId,
-		"username":   user.Username,
-		"avatar":     user.Avatar,
-		"bio":        user.Bio,
-		"subscribed": user.Subscribed,
+		"userId":             user.UserId,
+		"username":           user.Username,
+		"profilePictureLink": user.ProfilePictureLink,
+		"bio":                user.Bio,
+		"subscribed":         user.Subscribed,
 	}
 
 	pipe := r.GetPipe(ctx)
@@ -496,11 +496,11 @@ func CommentMapToComment(commentMap map[string]string) *types.Comment {
 
 func UserMapToUser(userMap map[string]string) *types.User {
 	return &types.User{
-		UserId:     userMap["userId"],
-		Username:   userMap["username"],
-		Avatar:     userMap["avatar"],
-		Bio:        userMap["bio"],
-		Subscribed: utils.StringToInt64(userMap["subscribed"], 0),
+		UserId:             userMap["userId"],
+		Username:           userMap["username"],
+		ProfilePictureLink: userMap["profilePictureLink"],
+		Bio:                userMap["bio"],
+		Subscribed:         utils.StringToInt64(userMap["subscribed"], 0),
 	}
 }
 

@@ -30,7 +30,7 @@ func generateUniqueCommentID(ctx context.Context, postID string, pc cache.PostCa
 
 	if exist && err == nil {
 		for {
-			id := postID + uuid.NewString()[:8]
+			id := postID + uuid.NewString()
 			existIds, err := db.GetPostCommentIds(ctx, postID)
 
 			if err != nil {
