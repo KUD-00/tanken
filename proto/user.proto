@@ -48,10 +48,10 @@ message HardDeleteUserResponse {
 
 message UpdateUserRequest {
   string userId = 1;
-  string name = 2;
-  string bio = 3;
-  string profilePictureLink = 4;
-  int64 subscribed = 5;
+  optional string name = 2;
+  optional string bio = 3;
+  optional string profilePictureLink = 4;
+  optional int64 subscribed = 5;
 }
 
 message UpdateUserResponse {

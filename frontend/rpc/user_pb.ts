@@ -373,24 +373,24 @@ export class UpdateUserRequest extends Message<UpdateUserRequest> {
   userId = "";
 
   /**
-   * @generated from field: string name = 2;
+   * @generated from field: optional string name = 2;
    */
-  name = "";
+  name?: string;
 
   /**
-   * @generated from field: string bio = 3;
+   * @generated from field: optional string bio = 3;
    */
-  bio = "";
+  bio?: string;
 
   /**
-   * @generated from field: string profilePictureLink = 4;
+   * @generated from field: optional string profilePictureLink = 4;
    */
-  profilePictureLink = "";
+  profilePictureLink?: string;
 
   /**
-   * @generated from field: int64 subscribed = 5;
+   * @generated from field: optional int64 subscribed = 5;
    */
-  subscribed = protoInt64.zero;
+  subscribed?: bigint;
 
   constructor(data?: PartialMessage<UpdateUserRequest>) {
     super();
@@ -401,10 +401,10 @@ export class UpdateUserRequest extends Message<UpdateUserRequest> {
   static readonly typeName = "rpc.UpdateUserRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "userId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "bio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "profilePictureLink", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "subscribed", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 3, name: "bio", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 4, name: "profilePictureLink", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 5, name: "subscribed", kind: "scalar", T: 3 /* ScalarType.INT64 */, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateUserRequest {
