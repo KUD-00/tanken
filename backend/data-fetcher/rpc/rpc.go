@@ -264,10 +264,10 @@ func (s *server) SignUpUser(ctx context.Context, req *connect.Request[pb.SignUpU
 
 func (s *server) UpdateUser(ctx context.Context, req *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error) {
 	if err := setUser(ctx, req.Msg.UserId, &types.UserPtr{
-		Username:           &req.Msg.Name,
-		Bio:                &req.Msg.Bio,
-		Subscribed:         &req.Msg.Subscribed,
-		ProfilePictureLink: &req.Msg.ProfilePictureLink,
+		Username:           req.Msg.Name,
+		Bio:                req.Msg.Bio,
+		Subscribed:         req.Msg.Subscribed,
+		ProfilePictureLink: req.Msg.ProfilePictureLink,
 	}, false, true, s.userCache, s.db); err != nil {
 		return connect.NewResponse(&pb.UpdateUserResponse{Ok: 0, Msg: err.Error()}), nil
 	}

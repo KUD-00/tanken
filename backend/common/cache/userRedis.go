@@ -44,13 +44,22 @@ func (r *UserRedisCacheService) SetUserOptional(ctx context.Context, userId stri
 		changed = *user.Changed
 	}
 
-	_, err := r.client.HSet(ctx, "user:"+userId, map[string]interface{}{
-		"username":           *user.Username,
-		"bio":                *user.Bio,
-		"profilePictureLink": *user.ProfilePictureLink,
-		"subscribed":         *user.Subscribed,
-		"changed":            changed,
-	}).Result()
+	data := make(map[string]interface{})
+	if user.Username != nil {
+		data["username"] = *user.Username
+	}
+	if user.Bio != nil {
+		data["bio"] = *user.Bio
+	}
+	if user.ProfilePictureLink != nil {
+		data["profilePictureLink"] = *user.ProfilePictureLink
+	}
+	if user.Subscribed != nil {
+		data["subscribed"] = *user.Subscribed
+	}
+	data["changed"] = changed
+
+	_, err := r.client.HSet(ctx, "user:"+userId, data).Result()
 
 	return err
 }
