@@ -2,7 +2,7 @@ FROM golang:1.22.3 as builder
 
 WORKDIR /src
 
-COPY integreted-local-tests/ /src/test/
+COPY integrated-local-tests/ /src/test/
 
 WORKDIR /src/test
 

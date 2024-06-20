@@ -58,7 +58,7 @@ initialize_k8s_services:
 	@kubectl apply -f infra/k8s-local-test/services/data-fetcher.yaml
 
 update_test_image:
-	@docker build -f integreted-local-tests/Dockerfile -t test:local .
+	@docker build -f integrated-local-tests/Dockerfile -t test:local .
 	@kind load docker-image --name tanken-local-test test:local
 	@kubectl delete job test-job
 	@kubectl apply -f infra/k8s-local-test/jobs/test.yaml
@@ -83,3 +83,5 @@ clear_postgres:
 
 clear_all_data: flush_redis clear_postgres update_migration_image
 	@echo "All caches and databases cleared."
+
+integrated_retest: clear_all_data update_migration_image update_backend_image update_test_image 
