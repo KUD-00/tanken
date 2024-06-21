@@ -15,7 +15,7 @@ func TestConnection(client pbconnect.DataFetcherServiceClient) error {
 
 	res, err := client.TestConnection(context.Background(), connect.NewRequest(req))
 
-	if err != nil || res.Msg.Ok != true {
+	if err != nil || !res.Msg.Ok {
 		return fmt.Errorf("error testing connection: %v", err)
 	}
 
@@ -111,31 +111,29 @@ func TestUpdateUser(client pbconnect.DataFetcherServiceClient, user *pb.User) er
 	return nil
 }
 
-/*
-func TestAddPost(client pbconnect.DataFetcherServiceClient, userId string) (postId string, err error) {
+func TestAddPost(client pbconnect.DataFetcherServiceClient, user *pb.User, post *pb.Post) error {
 	addPostReq := &pb.AddPostRequest{
-		UserId:  userId,
-		Content: "body",
-		Location: &pb.Location{
-			Latitude:  69.69,
-			Longitude: 69.69,
-		},
-		Tags:         []string{"tag1", "tag2"},
-		PictureChunk: nil,
+		UserId:       user.UserId,
+		Content:      post.Content,
+		Location:     post.Location,
+		Tags:         post.Tags,
+		PictureChunk: post.PictureChunk,
 	}
 
 	addPostRes, err := client.AddPost(context.Background(), connect.NewRequest(addPostReq))
 
 	if err != nil || addPostRes.Msg.Ok != 1 {
-		return "", fmt.Errorf("error adding post: %v, response: %v", err, addPostRes.Msg.Msg)
+		return fmt.Errorf("error adding post: %v, response: %v", err, addPostRes.Msg.Msg)
 	}
 
-	return addPostRes.Msg.PostId, nil
+	post.PostId = addPostRes.Msg.PostId
+
+	return nil
 }
 
-func TestGetPostsByPostIds(client pbconnect.DataFetcherServiceClient, postIds []string, users []pb.User) error {
+func TestGetPostsByPostIds(client pbconnect.DataFetcherServiceClient, post *pb.Post, user *pb.User) error {
 	getPostsByPostIdsReq := &pb.GetPostsByPostIdsRequest{
-		PostIds: postIds,
+		PostIds: []string{post.PostId},
 	}
 
 	getPostsByPostIdsRes, err := client.GetPostsByPostIds(context.Background(), connect.NewRequest(getPostsByPostIdsReq))
@@ -146,15 +144,12 @@ func TestGetPostsByPostIds(client pbconnect.DataFetcherServiceClient, postIds []
 
 	expectedResponsePosts := []*pb.Post{
 		{
-			PostId:  postIds[0],
-			Author:  &users[0],
-			Content: "body",
-			Location: &pb.Location{
-				Latitude:  69.69,
-				Longitude: 69.69,
-			},
-			Tags:         []string{"tag1", "tag2"},
-			PictureChunk: nil,
+			PostId:       post.PostId,
+			Author:       user,
+			Content:      post.Content,
+			Location:     post.Location,
+			Tags:         post.Tags,
+			PictureChunk: post.PictureChunk,
 		},
 	}
 
@@ -165,4 +160,54 @@ func TestGetPostsByPostIds(client pbconnect.DataFetcherServiceClient, postIds []
 	return nil
 }
 
-*/
+func TestAddLike(client pbconnect.DataFetcherServiceClient, user *pb.User, post *pb.Post) error {
+	addLikeReq := &pb.AddLikeRequest{
+		UserId: user.UserId,
+		PostId: post.PostId,
+	}
+
+	addLikeRes, err := client.AddLike(context.Background(), connect.NewRequest(addLikeReq))
+
+	if err != nil || addLikeRes.Msg.Ok != 1 {
+		return fmt.Errorf("error adding like: %v, response: %v", err, addLikeRes.Msg.Msg)
+	}
+
+	postRes, err := client.GetPostsByPostIds(context.Background(), connect.NewRequest(&pb.GetPostsByPostIdsRequest{PostIds: []string{post.PostId}}))
+
+	if err != nil || postRes.Msg.Ok != 1 {
+		return fmt.Errorf("error getting posts by post ids: %v, response: %v", err, postRes.Msg.Msg)
+	}
+
+	if postRes.Msg.Posts[0].Likes != 1 {
+		return fmt.Errorf("expected post likes to be 1, got: %v", postRes.Msg.Posts[0].Likes)
+	}
+	// TODO: won't check likedby cause rpc won't return it
+
+	return nil
+}
+
+func TestRemoveLike(client pbconnect.DataFetcherServiceClient, user *pb.User, post *pb.Post) error {
+	removeLikeReq := &pb.RemoveLikeRequest{
+		UserId: user.UserId,
+		PostId: post.PostId,
+	}
+
+	removeLikeRes, err := client.RemoveLike(context.Background(), connect.NewRequest(removeLikeReq))
+
+	if err != nil || removeLikeRes.Msg.Ok != 1 {
+		return fmt.Errorf("error removing like: %v, response: %v", err, removeLikeRes.Msg.Msg)
+	}
+
+	postRes, err := client.GetPostsByPostIds(context.Background(), connect.NewRequest(&pb.GetPostsByPostIdsRequest{PostIds: []string{post.PostId}}))
+
+	if err != nil || postRes.Msg.Ok != 1 {
+		return fmt.Errorf("error getting posts by post ids: %v, response: %v", err, postRes.Msg.Msg)
+	}
+
+	if postRes.Msg.Posts[0].Likes != 0 {
+		return fmt.Errorf("expected post likes to be 0, got: %v", postRes.Msg.Posts[0].Likes)
+	}
+	// TODO: won't check likedby cause rpc won't return it
+
+	return nil
+}

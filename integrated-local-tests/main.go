@@ -36,6 +36,16 @@ func main() {
 		},
 	}
 
+	post := pb.Post{
+		Content: "content body",
+		Location: &pb.Location{
+			Latitude:  34.99233214592428,
+			Longitude: 135.8173205715178,
+		},
+		Tags:         []string{"tag1", "tag2"},
+		PictureChunk: nil,
+	}
+
 	err = datafetcher.TestSignUpUser(client, &users)
 	if err != nil {
 		panic(err)
@@ -47,6 +57,26 @@ func main() {
 	}
 
 	err = datafetcher.TestUpdateUser(client, &users[0])
+	if err != nil {
+		panic(err)
+	}
+
+	err = datafetcher.TestAddPost(client, &users[0], &post)
+	if err != nil {
+		panic(err)
+	}
+
+	err = datafetcher.TestGetPostsByPostIds(client, &post, &users[0])
+	if err != nil {
+		panic(err)
+	}
+
+	err = datafetcher.TestAddLike(client, &users[1], &post)
+	if err != nil {
+		panic(err)
+	}
+
+	err = datafetcher.TestRemoveLike(client, &users[1], &post)
 	if err != nil {
 		panic(err)
 	}
