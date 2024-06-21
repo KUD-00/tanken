@@ -6,6 +6,7 @@ option go_package = "tanken/backend/data-fetcher/rpc/pb";
 import "general.proto";
 import "post.proto";
 import "user.proto";
+import "comment.proto";
 
 message TestConnectionRequest {
     double foo = 1;
@@ -17,6 +18,7 @@ message TestConnectionResponse {
 
 service DataFetcherService{
   rpc TestConnection(TestConnectionRequest) returns (TestConnectionResponse) {}
+
   rpc GetPostsByLocation(GetPostsByLocationRequest) returns (GetPostsByLocationResponse) {}
   rpc GetPostsByPostIds(GetPostsByPostIdsRequest) returns (GetPostsByPostIdsResponse) {}
   rpc GetPostsByUser(GetPostsByUserIdRequest) returns (GetPostsByUserIdResponse) {}
@@ -33,6 +35,9 @@ service DataFetcherService{
 
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse) {}
   rpc RemoveComment(RemoveCommentRequest) returns (RemoveCommentResponse) {}
+  rpc ModifyComment(ModifyCommentRequest) returns (ModifyCommentResponse) {}
+  rpc GetCommentByCommentId(GetCommentByCommentIdRequest) returns (GetCommentsByPostIdResponse) {}
+  rpc GetCommentsByPostId(GetCommentsByPostIdRequest) returns (GetCommentByCommentIdResponse) {}
   
   rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse);
   rpc SignUpUser(SignUpUserRequest) returns (SignUpUserResponse);

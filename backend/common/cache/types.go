@@ -28,6 +28,7 @@ type PostCacheService interface {
 
 	// get method default without pipeliner, cmd version with pipeliner.
 	// set method default with pipeliner
+	GetPost(ctx context.Context, postID string) (*types.Post, error)
 
 	GetPostDetails(ctx context.Context, postID string) (*types.PostDetailsPtr, error)
 	SetPostDetails(ctx context.Context, postID string, post *types.PostDetailsPtr) error

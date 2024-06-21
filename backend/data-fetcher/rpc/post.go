@@ -88,7 +88,7 @@ func getPost(ctx context.Context, postId string, rs cache.PostCacheService, gc c
 		return post, nil
 	}
 
-	post, err := getPostFromDB(ctx, postId, rs, db)
+	post, err := db.GetPost(ctx, postId)
 	if err != nil {
 		return nil, err
 	}
@@ -149,37 +149,10 @@ func getCachedPosts(ctx context.Context, postIds []string, rs cache.PostCacheSer
 }
 
 func getPostFromCache(ctx context.Context, postId string, rs cache.PostCacheService, gc cache.GeoCacheService) (*types.Post, error) {
-	exists, err := rs.IsKeyExist(ctx, "post:"+postId)
+	post, err := rs.GetPost(ctx, postId)
 	if err != nil {
-		return nil, fmt.Errorf("error checking key existence: %v", err)
+		return nil, fmt.Errorf("error retrieving post from Redis: %v", err)
 	}
-	if !exists {
-		return nil, fmt.Errorf("post not found in cache")
-	}
-
-	prcs, ok := rs.(*cache.PostRedisCacheService)
-	if !ok {
-		return nil, fmt.Errorf("cache service does not support GetPostDetailsCmd")
-	}
-
-	ctx, pipe := rs.NewPipe(ctx)
-	postDetailsCmd, _ := prcs.GetPostDetailsCmd(ctx, postId)
-	tagsCmd, _ := prcs.GetPostTagsCmd(ctx, postId)
-	pictureLinksCmd, _ := prcs.GetPostPictureLinksCmd(ctx, postId)
-	commentsCmd, _ := prcs.GetPostCommentIdsCmd(ctx, postId)
-	likedByCmd, _ := prcs.GetPostLikedByCmd(ctx, postId)
-
-	_, err = pipe.Exec(ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("error getting post from Redis: %v", err)
-	}
-
-	post := postDetailsCmd.Val()
-	tags := tagsCmd.Val()
-	pictureLinks := pictureLinksCmd.Val()
-	comments := commentsCmd.Val()
-	likedBy := likedByCmd.Val()
 
 	geoPos, err := gc.GetGeoLocation(ctx, postId)
 	if err != nil {
@@ -191,76 +164,9 @@ func getPostFromCache(ctx context.Context, postId string, rs cache.PostCacheServ
 		Longitude: geoPos.Longitude,
 	}
 
-	return &types.Post{
-		//TODO: make this as function
-		PostDetails: types.PostDetails{
-			PostId:    postId,
-			Location:  location,
-			CreatedAt: utils.StringToInt64(post["CreatedAt"], 0),
-			UpdatedAt: utils.StringToInt64(post["UpdatedAt"], 0),
-			UserId:    post["UserId"],
-			Content:   post["Content"],
-			Likes:     utils.StringToInt64(post["Likes"], 0),
-			Bookmarks: utils.StringToInt64(post["Bookmarks"], 0),
-		},
-		PostSets: types.PostSets{
-			Tags:         tags,
-			PictureLinks: pictureLinks,
-			CommentIds:   comments,
-			LikedBy:      likedBy,
-		},
-	}, nil
-}
+	post.Location = location
 
-func getPostFromDB(ctx context.Context, postId string, rs cache.PostCacheService, db database.DatabaseService) (*types.Post, error) {
-	var post types.Post
-	var location types.Location
-
-	db.GetPostDetails(ctx, postId)
-
-	details := types.PostDetailsPtr{
-		CreatedAt: &post.CreatedAt,
-		UpdatedAt: &post.UpdatedAt,
-		UserId:    &post.UserId,
-		Content:   &post.Content,
-		Likes:     &post.Likes,
-		Bookmarks: &post.Bookmarks,
-	}
-
-	ctx, pipe := rs.NewPipe(ctx)
-
-	rs.SetPostDetails(ctx, postId, &details)
-	rs.AddPostLikedBy(ctx, postId, post.LikedBy)
-	rs.AddPostCommentIds(ctx, postId, post.CommentIds)
-	rs.AddPostTags(ctx, postId, post.Tags)
-	rs.AddPostPictureLinks(ctx, postId, post.PictureLinks)
-
-	_, err := pipe.Exec(ctx)
-
-	if err != nil {
-		return &types.Post{}, err
-	}
-
-	//TODO: should i only save location in geo-redis?
-	//TODO: maybe location geo-redis need to backup one day.
-
-	return &types.Post{
-		PostDetails: types.PostDetails{
-			PostId:    postId,
-			Location:  location,
-			CreatedAt: post.CreatedAt,
-			UpdatedAt: post.UpdatedAt,
-			UserId:    post.UserId,
-			Content:   post.Content,
-			Likes:     post.Likes,
-			Bookmarks: post.Bookmarks,
-		},
-		PostSets: types.PostSets{
-			Tags:         post.Tags,
-			PictureLinks: post.PictureLinks,
-			CommentIds:   post.CommentIds,
-		},
-	}, nil
+	return post, nil
 }
 
 func removePostFromCache(ctx context.Context, postId string, rs cache.PostCacheService) error {

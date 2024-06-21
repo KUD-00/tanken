@@ -145,26 +145,3 @@ message GetBookmarksResponse {
   string msg = 2;
   repeated Post posts = 3;
 }
-
-message AddCommentRequest {
-  string userId = 1;
-  string postId = 2;
-  string content = 3;
-}
-
-message AddCommentResponse {
-  int64 ok = 1;
-  string msg = 2;
-  string commentId = 3;
-}
-
-message RemoveCommentRequest {
-  string userId = 1;
-  string postId = 2;
-  string commentId = 3;
-}
-
-message RemoveCommentResponse {
-  int64 ok = 1;
-  string msg = 2;
-}
