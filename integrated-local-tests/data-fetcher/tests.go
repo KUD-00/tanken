@@ -211,3 +211,19 @@ func TestRemoveLike(client pbconnect.DataFetcherServiceClient, user *pb.User, po
 
 	return nil
 }
+
+func TestAddComment(client pbconnect.DataFetcherServiceClient, user *pb.User, post *pb.Post, comment *pb.Comment) error {
+	addCommentReq := &pb.AddCommentRequest{
+		UserId:  user.UserId,
+		PostId:  post.PostId,
+		Content: comment.Content,
+	}
+
+	addCommentRes, err := client.AddComment(context.Background(), connect.NewRequest(addCommentReq))
+
+	if err != nil || addCommentRes.Msg.Ok != 1 {
+		return fmt.Errorf("error adding comment: %v, response: %v", err, addCommentRes.Msg.Msg)
+	}
+
+	return nil
+}

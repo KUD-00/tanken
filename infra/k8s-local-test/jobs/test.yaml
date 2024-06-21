@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: test-job
 spec:
+  backoffLimit: 0
   template:
     spec:
       containers:

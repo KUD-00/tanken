@@ -80,4 +80,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	comment := pb.Comment{
+		Content: "comment body",
+	}
+
+	err = datafetcher.TestAddComment(client, &users[1], &post, &comment)
+	if err != nil {
+		panic(err)
+	}
 }
