@@ -35,6 +35,7 @@ func generateUniquePostID(ctx context.Context, rs *cache.GeoRedisCacheService) (
 	}
 }
 
+// TODO: restructure this to a much more common one like cachePost
 func cacheNewPost(ctx context.Context, postID string, content string, userId string, tags []string, rs *cache.PostRedisCacheService) error {
 	ctx, pipe := rs.NewPipe(ctx)
 
@@ -54,10 +55,19 @@ func cacheNewPost(ctx context.Context, postID string, content string, userId str
 	rs.AddPostTags(ctx, postID, tags)
 	rs.AddPostPictureLinks(ctx, postID, []string{})
 
-	_, err := pipe.Exec(ctx)
+	cmds, _ := pipe.Exec(ctx)
 
-	if err != nil {
-		return fmt.Errorf("error caching new post: %v", err)
+	for i, cmd := range cmds {
+		if cmd.Err() != nil {
+			switch i {
+			case 0:
+				return fmt.Errorf("error setting post details: %v", cmd.Err())
+			case 1:
+				return fmt.Errorf("error adding post tags: %v", cmd.Err())
+			case 2:
+				return fmt.Errorf("error adding post picture links: %v", cmd.Err())
+			}
+		}
 	}
 
 	return nil
@@ -160,8 +170,9 @@ func getPostFromCache(ctx context.Context, postId string, rs cache.PostCacheServ
 	likedByCmd, _ := prcs.GetPostLikedByCmd(ctx, postId)
 
 	_, err = pipe.Exec(ctx)
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting post from Redis: %v", err)
 	}
 
 	post := postDetailsCmd.Val()
@@ -335,10 +346,17 @@ func decrementLikes(ctx context.Context, postId string, userId string, rs cache.
 	rs.SetPostDetails(ctx, postId, &details)
 	rs.RemovePostLikedBy(ctx, postId, []string{userId})
 
-	_, err = pipe.Exec(ctx)
+	cmds, _ := pipe.Exec(ctx)
 
-	if err != nil {
-		return fmt.Errorf("error decrementing likes in Redis: %v", err)
+	for i, cmd := range cmds {
+		if cmd.Err() != nil {
+			switch i {
+			case 0:
+				return fmt.Errorf("error setting post details: %v", cmd.Err())
+			case 1:
+				return fmt.Errorf("error decrementing post likedby: %v", cmd.Err())
+			}
+		}
 	}
 
 	return nil
