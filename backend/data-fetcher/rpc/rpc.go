@@ -102,18 +102,24 @@ func (s *server) GetPostsByUser(ctx context.Context, req *connect.Request[pb.Get
 	return connect.NewResponse(&pb.GetPostsByUserIdResponse{Posts: nil}), nil
 }
 
+// Integrated tested
 func (s *server) GetPostsByPostIds(ctx context.Context, req *connect.Request[pb.GetPostsByPostIdsRequest]) (*connect.Response[pb.GetPostsByPostIdsResponse], error) {
 	posts, err := getPosts(ctx, req.Msg.PostIds, s.postCache, s.geoCache, s.db)
 
 	if err != nil {
-		return nil, fmt.Errorf("error getting posts: %v", err)
+		return connect.NewResponse(&pb.GetPostsByPostIdsResponse{
+			Ok:  0,
+			Msg: "error getting posts: " + err.Error(),
+		}), nil
 	}
 
 	return connect.NewResponse(&pb.GetPostsByPostIdsResponse{
+		Ok:    1,
 		Posts: utils.CommonPostsToPbPosts(posts),
 	}), nil
 }
 
+// Integrated tested
 func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostRequest]) (*connect.Response[pb.AddPostResponse], error) {
 	longitude := float64(req.Msg.Location.Longitude)
 	latitude := float64(req.Msg.Location.Latitude)
@@ -149,18 +155,20 @@ func (s *server) SoftDeletePost(ctx context.Context, req *connect.Request[pb.Sof
 	return connect.NewResponse(&pb.SoftDeletePostResponse{}), nil
 }
 
+// Integrated tested
 func (s *server) AddLike(ctx context.Context, req *connect.Request[pb.AddLikeRequest]) (*connect.Response[pb.AddLikeResponse], error) {
-	if err := incrementLikes(ctx, req.Msg.UserId, req.Msg.UserId, s.postCache, s.geoCache, s.db); err != nil {
+	if err := incrementLikes(ctx, req.Msg.PostId, req.Msg.UserId, s.postCache, s.geoCache, s.db); err != nil {
 		return connect.NewResponse(&pb.AddLikeResponse{Ok: 0, Msg: err.Error()}), nil
 	}
 	return connect.NewResponse(&pb.AddLikeResponse{Ok: 1}), nil
 }
 
+// Integrated tested
 func (s *server) RemoveLike(ctx context.Context, req *connect.Request[pb.RemoveLikeRequest]) (*connect.Response[pb.RemoveLikeResponse], error) {
-	if err := decrementLikes(ctx, req.Msg.UserId, req.Msg.UserId, s.postCache, s.geoCache, s.db); err != nil {
+	if err := decrementLikes(ctx, req.Msg.PostId, req.Msg.UserId, s.postCache, s.geoCache, s.db); err != nil {
 		return connect.NewResponse(&pb.RemoveLikeResponse{Ok: 0, Msg: err.Error()}), nil
 	}
-	return connect.NewResponse(&pb.RemoveLikeResponse{}), nil
+	return connect.NewResponse(&pb.RemoveLikeResponse{Ok: 1}), nil
 }
 
 // Here
@@ -191,7 +199,6 @@ func (s *server) WriteBackCache(ctx context.Context, req *connect.Request[pb.Wri
 	return connect.NewResponse(&pb.WriteBackCacheResponse{}), nil
 }
 
-// Here
 func (s *server) GetUserInfoByOAuth(ctx context.Context, req *connect.Request[pb.GetUserInfoByOAuthRequest]) (*connect.Response[pb.GetUserInfoByOAuthResponse], error) {
 	user := pb.User{}
 
@@ -215,6 +222,7 @@ func (s *server) SoftDeleteUser(ctx context.Context, req *connect.Request[pb.Sof
 	return connect.NewResponse(&pb.SoftDeleteUserResponse{}), nil
 }
 
+// Integrated tested
 func (s *server) GetUserInfo(ctx context.Context, req *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error) {
 	user, err := getUser(ctx, req.Msg.UserId, s.userCache, s.db)
 
@@ -233,6 +241,7 @@ func (s *server) GetUserInfo(ctx context.Context, req *connect.Request[pb.GetUse
 	return connect.NewResponse(&pb.GetUserInfoResponse{Ok: 1, User: pbUser}), nil
 }
 
+// Integrated tested
 func (s *server) SignUpUser(ctx context.Context, req *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error) {
 	userId, err := generateUniqueUserID(ctx, s.db)
 
@@ -262,6 +271,7 @@ func (s *server) SignUpUser(ctx context.Context, req *connect.Request[pb.SignUpU
 	return connect.NewResponse(&pb.SignUpUserResponse{Ok: 1, UserId: userId}), nil
 }
 
+// Integrated tested
 func (s *server) UpdateUser(ctx context.Context, req *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error) {
 	if err := setUser(ctx, req.Msg.UserId, &types.UserPtr{
 		Username:           req.Msg.Name,
@@ -275,6 +285,7 @@ func (s *server) UpdateUser(ctx context.Context, req *connect.Request[pb.UpdateU
 	return connect.NewResponse(&pb.UpdateUserResponse{Ok: 1}), nil
 }
 
+// Integrated tested
 func (s *server) TestConnection(ctx context.Context, req *connect.Request[pb.TestConnectionRequest]) (*connect.Response[pb.TestConnectionResponse], error) {
 	if req.Msg.Foo == 69.69 {
 		return connect.NewResponse(&pb.TestConnectionResponse{Ok: true}), nil

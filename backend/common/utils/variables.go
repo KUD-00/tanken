@@ -1,6 +1,7 @@
 package utils
 
 const (
+	PostPrefix         = "post:"
 	LikedBySuffix      = ":likedBy"
 	TagsSuffix         = ":tags"
 	PictureLinksSuffix = ":pictureLinks"

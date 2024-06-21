@@ -31,7 +31,7 @@ func (r *PostRedisCacheService) GetPostDetailsCmd(ctx context.Context, postID st
 		return nil, fmt.Errorf("error getting post details: pipeliner not found")
 	}
 
-	cmd := pipe.HGetAll(ctx, postID)
+	cmd := pipe.HGetAll(ctx, utils.PostPrefix+postID)
 	return cmd, nil
 }
 
@@ -49,13 +49,13 @@ func (r *PostRedisCacheService) SetPostDetails(ctx context.Context, postID strin
 
 	pipe := r.GetPipe(ctx)
 	if pipe == nil {
-		err := r.client.HSet(ctx, postID, postDetailsMap).Err()
+		err := r.client.HSet(ctx, utils.PostPrefix+postID, postDetailsMap).Err()
 
 		if err != nil {
 			return fmt.Errorf("error setting post details: %v", err)
 		}
 	} else {
-		pipe.HSet(ctx, postID, postDetailsMap)
+		pipe.HSet(ctx, utils.PostPrefix+postID, postDetailsMap)
 	}
 
 	return nil
@@ -68,11 +68,11 @@ func (r *PostRedisCacheService) GetPostLikedByCmd(ctx context.Context, postID st
 		return nil, fmt.Errorf("error getting post likedBy: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, postID+utils.LikedBySuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.LikedBySuffix), nil
 }
 
 func (r *PostRedisCacheService) GetPostLikedBy(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, postID+utils.LikedBySuffix).Result()
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.LikedBySuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post likedBy: %v", err)
@@ -90,12 +90,12 @@ func (r *PostRedisCacheService) AddPostLikedBy(ctx context.Context, postID strin
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, postID+utils.LikedBySuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post likedBy: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, postID+utils.LikedBySuffix, args...)
+		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...)
 	}
 	return nil
 }
@@ -109,12 +109,12 @@ func (r *PostRedisCacheService) RemovePostLikedBy(ctx context.Context, postID st
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, postID+utils.LikedBySuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post likedBy: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, postID+utils.LikedBySuffix, args...)
+		pipe.SRem(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...)
 	}
 	return nil
 }
@@ -126,11 +126,11 @@ func (r *PostRedisCacheService) GetPostTagsCmd(ctx context.Context, postID strin
 		return nil, fmt.Errorf("error getting post tags: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, postID+utils.TagsSuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.TagsSuffix), nil
 }
 
 func (r *PostRedisCacheService) GetPostTags(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, postID+utils.TagsSuffix).Result()
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.TagsSuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post tags: %v", err)
@@ -148,12 +148,12 @@ func (r *PostRedisCacheService) AddPostTags(ctx context.Context, postID string, 
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, postID+utils.TagsSuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post tags: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, postID+utils.TagsSuffix, args...)
+		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...)
 	}
 	return nil
 }
@@ -167,12 +167,12 @@ func (r *PostRedisCacheService) RemovePostTags(ctx context.Context, postID strin
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, postID+utils.TagsSuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post tags: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, postID+utils.TagsSuffix, args...)
+		pipe.SRem(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...)
 	}
 	return nil
 }
@@ -184,11 +184,11 @@ func (r *PostRedisCacheService) GetPostPictureLinksCmd(ctx context.Context, post
 		return nil, fmt.Errorf("error getting post pictureLinks: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, postID+utils.PictureLinksSuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix), nil
 }
 
 func (r *PostRedisCacheService) GetPostPictureLinks(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, postID+utils.PictureLinksSuffix).Result()
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post pictureLinks: %v", err)
@@ -198,6 +198,10 @@ func (r *PostRedisCacheService) GetPostPictureLinks(ctx context.Context, postID 
 }
 
 func (r *PostRedisCacheService) AddPostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error {
+	if len(pictureLinks) == 0 {
+		return nil
+	}
+
 	pipe := r.GetPipe(ctx)
 
 	args := make([]interface{}, len(pictureLinks))
@@ -206,12 +210,12 @@ func (r *PostRedisCacheService) AddPostPictureLinks(ctx context.Context, postID 
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, postID+utils.PictureLinksSuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post pictureLinks: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, postID+utils.PictureLinksSuffix, args...)
+		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...)
 	}
 	return nil
 }
@@ -225,12 +229,12 @@ func (r *PostRedisCacheService) RemovePostPictureLinks(ctx context.Context, post
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, postID+utils.PictureLinksSuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post pictureLinks: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, postID+utils.PictureLinksSuffix, args...)
+		pipe.SRem(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...)
 	}
 	return nil
 }
@@ -242,11 +246,11 @@ func (r *PostRedisCacheService) GetPostCommentIdsCmd(ctx context.Context, postID
 		return nil, fmt.Errorf("error getting post commentIds: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, postID+utils.CommentIdsSuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix), nil
 }
 
 func (r *PostRedisCacheService) GetPostCommentIds(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, postID+utils.CommentIdsSuffix).Result()
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post commentIds: %v", err)
@@ -264,12 +268,12 @@ func (r *PostRedisCacheService) AddPostCommentIds(ctx context.Context, postID st
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, postID+utils.CommentIdsSuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post commentIds: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, postID+utils.CommentIdsSuffix, commentIds)
+		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, commentIds)
 	}
 	return nil
 }
@@ -283,12 +287,12 @@ func (r *PostRedisCacheService) RemovePostCommentIds(ctx context.Context, postID
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, postID+utils.CommentIdsSuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post commentIds: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, postID+utils.CommentIdsSuffix, commentIds)
+		pipe.SRem(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, commentIds)
 	}
 	return nil
 }
