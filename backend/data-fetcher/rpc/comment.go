@@ -81,26 +81,3 @@ func cacheNewComment(ctx context.Context, postID string, content string, userId 
 
 	return pc.SetComment(ctx, commentID, &comment)
 }
-
-func getComment(ctx context.Context, commentID string, pc cache.PostCacheService, db database.DatabaseService) (*types.Comment, error) {
-	exists, err := pc.IsKeyExist(ctx, "comment:"+commentID)
-
-	if err != nil {
-		return nil, fmt.Errorf("error checking Redis: %v", err)
-	}
-
-	if exists {
-		comment, err := pc.GetComment(ctx, commentID)
-		if err != nil {
-			return nil, err
-		}
-		return comment, nil
-	}
-
-	comment, err := db.GetCommentById(ctx, commentID)
-	if err != nil {
-		return nil, err
-	}
-
-	return comment, nil
-}

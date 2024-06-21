@@ -24,6 +24,55 @@ func NewPostRedisCacheService(client *redis.Client) *PostRedisCacheService {
 	}
 }
 
+func (r *PostRedisCacheService) GetPost(ctx context.Context, postId string) (*types.Post, error) {
+	exists, err := r.IsKeyExist(ctx, "post:"+postId)
+	if err != nil {
+		return nil, fmt.Errorf("error checking key existence: %v", err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("post not found in cache")
+	}
+
+	ctx, pipe := r.NewPipe(ctx)
+
+	postDetailsCmd, _ := r.GetPostDetailsCmd(ctx, postId)
+	tagsCmd, _ := r.GetPostTagsCmd(ctx, postId)
+	pictureLinksCmd, _ := r.GetPostPictureLinksCmd(ctx, postId)
+	commentsCmd, _ := r.GetPostCommentIdsCmd(ctx, postId)
+	likedByCmd, _ := r.GetPostLikedByCmd(ctx, postId)
+
+	_, err = pipe.Exec(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("error getting post from Redis: %v", err)
+	}
+
+	post := postDetailsCmd.Val()
+	tags := tagsCmd.Val()
+	pictureLinks := pictureLinksCmd.Val()
+	comments := commentsCmd.Val()
+	likedBy := likedByCmd.Val()
+
+	return &types.Post{
+		//TODO: make this as function
+		PostDetails: types.PostDetails{
+			PostId:    postId,
+			CreatedAt: utils.StringToInt64(post["CreatedAt"], 0),
+			UpdatedAt: utils.StringToInt64(post["UpdatedAt"], 0),
+			UserId:    post["UserId"],
+			Content:   post["Content"],
+			Likes:     utils.StringToInt64(post["Likes"], 0),
+			Bookmarks: utils.StringToInt64(post["Bookmarks"], 0),
+		},
+		PostSets: types.PostSets{
+			Tags:         tags,
+			PictureLinks: pictureLinks,
+			CommentIds:   comments,
+			LikedBy:      likedBy,
+		},
+	}, nil
+}
+
 func (r *PostRedisCacheService) GetPostDetailsCmd(ctx context.Context, postID string) (*redis.MapStringStringCmd, error) {
 	pipe := r.GetPipe(ctx)
 

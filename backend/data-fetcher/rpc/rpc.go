@@ -121,8 +121,8 @@ func (s *server) GetPostsByPostIds(ctx context.Context, req *connect.Request[pb.
 
 // Integrated tested
 func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostRequest]) (*connect.Response[pb.AddPostResponse], error) {
-	longitude := float64(req.Msg.Location.Longitude)
-	latitude := float64(req.Msg.Location.Latitude)
+	longitude := req.Msg.Location.Longitude
+	latitude := req.Msg.Location.Latitude
 
 	postID, err := generateUniquePostID(ctx, s.geoCache)
 	if err != nil {
@@ -134,7 +134,25 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 		return newUploadErrorResponse("Failed to register new postId to geo-redis: " + err.Error()), nil
 	}
 
-	err = cacheNewPost(ctx, postID, req.Msg.Content, req.Msg.UserId, req.Msg.Tags, s.postCache)
+	ctx, pipe := s.postCache.NewPipe(ctx)
+
+	timestamp := commonUtils.Int64Ptr(time.Now().Unix())
+
+	details := &types.PostDetailsPtr{
+		CreatedAt:  timestamp,
+		UpdatedAt:  timestamp,
+		UserId:     commonUtils.StringPtr(req.Msg.UserId),
+		Content:    commonUtils.StringPtr(req.Msg.Content),
+		Likes:      commonUtils.Int64Ptr(0),
+		Bookmarks:  commonUtils.Int64Ptr(0),
+		CacheScore: commonUtils.Int64Ptr(1),
+	}
+
+	s.postCache.SetPostDetails(ctx, postID, details)
+	s.postCache.AddPostTags(ctx, postID, req.Msg.Tags)
+	s.postCache.AddPostPictureLinks(ctx, postID, []string{})
+
+	_, err = pipe.Exec(ctx)
 
 	// Attempt to rollback if caching fails
 	if err != nil {
@@ -171,7 +189,7 @@ func (s *server) RemoveLike(ctx context.Context, req *connect.Request[pb.RemoveL
 	return connect.NewResponse(&pb.RemoveLikeResponse{Ok: 1}), nil
 }
 
-// Here
+// Integrated tested
 func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error) {
 	err := cacheNewComment(ctx, req.Msg.PostId, req.Msg.Content, req.Msg.UserId, s.postCache, s.db)
 
@@ -179,7 +197,7 @@ func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddComm
 		return connect.NewResponse(&pb.AddCommentResponse{Ok: 0, Msg: err.Error()}), nil
 	}
 
-	return connect.NewResponse(&pb.AddCommentResponse{}), nil
+	return connect.NewResponse(&pb.AddCommentResponse{Ok: 1}), nil
 }
 
 func (s *server) RemoveComment(ctx context.Context, req *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error) {

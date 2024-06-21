@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package rpc;
+
+import "general.proto";
+
+message AddCommentRequest {
+  string userId = 1;
+  string postId = 2;
+  string content = 3;
+}
+
+message AddCommentResponse {
+  int64 ok = 1;
+  string msg = 2;
+  string commentId = 3;
+}
+
+message RemoveCommentRequest {
+  string userId = 1;
+  string postId = 2;
+  string commentId = 3;
+}
+
+message RemoveCommentResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message GetCommentByCommentIdRequest {
+  string commentId = 1;
+}
+
+message GetCommentByCommentIdResponse {
+  int64 ok = 1;
+  string msg = 2;
+  Comment comment = 3;
+}
+
+message GetCommentsByPostIdRequest {
+  string postId = 1;
+}
+
+message GetCommentsByPostIdResponse {
+  int64 ok = 1;
+  string msg = 2;
+  repeated Comment comments = 3;
+}
+
+message ModifyCommentRequest {
+  string userId = 1;
+  string commentId = 2;
+}
+
+message ModifyCommentResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
