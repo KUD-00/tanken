@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	postgres "tanken/backend/common/db/postgres"
 	"tanken/backend/common/types"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -26,7 +27,7 @@ func TestPostgresDatabaseService_GetPostDetails(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	rows := sqlmock.NewRows([]string{"post_id", "user_id", "content", "created_at", "updated_at", "likes", "latitude", "longitude",
 		"status"}).
@@ -70,7 +71,7 @@ func TestPostgresDatabaseService_GetPostsDetails(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	rows := sqlmock.NewRows([]string{"post_id", "user_id", "content", "created_at", "updated_at", "likes", "latitude", "longitude", "status"}).
 		AddRow("1", "user1", "content1", createdAt, updatedAt, int64(10), 1.23, 4.56, int64(1)).
@@ -129,7 +130,7 @@ func TestPostgresDatabaseService_SetPostDetails(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	postId := "1"
 	post := &types.PostDetails{
@@ -170,7 +171,7 @@ func TestPostgresDatabaseService_SetPostsDetails(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	posts := []types.PostDetails{
 		{
@@ -224,10 +225,10 @@ func TestPostgresDatabaseService_GetPostLikedBy(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	mockRows := sqlmock.NewRows([]string{"user_id"}).AddRow("user1").AddRow("user2")
-	mock.ExpectQuery("SELECT user_id FROM post_likes WHERE post_id = \\$1").
+	mock.ExpectQuery("SELECT user_id FROM user_liked_posts WHERE post_id = \\$1").
 		WithArgs("post1").
 		WillReturnRows(mockRows)
 
@@ -248,9 +249,9 @@ func TestPostgresDatabaseService_AddPostLikedBy(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
-	mock.ExpectExec("INSERT INTO post_likes \\(post_id, user_id\\) VALUES \\(\\$1, \\$2\\), \\(\\$1, \\$3\\) ON CONFLICT DO NOTHING").
+	mock.ExpectExec("INSERT INTO user_liked_posts \\(post_id, user_id\\) VALUES \\(\\$1, \\$2\\), \\(\\$1, \\$3\\) ON CONFLICT DO NOTHING").
 		WithArgs("post1", "user1", "user2").
 		WillReturnResult(sqlmock.NewResult(1, 2))
 
@@ -270,9 +271,9 @@ func TestPostgresDatabaseService_DeletePostLikedBy(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
-	mock.ExpectExec("DELETE FROM post_likes WHERE post_id = \\$1 AND user_id = ANY\\(\\$2\\)").
+	mock.ExpectExec("DELETE FROM user_liked_posts WHERE post_id = \\$1 AND user_id = ANY\\(\\$2\\)").
 		WithArgs("post1", pq.Array([]string{"user1", "user2"})).
 		WillReturnResult(sqlmock.NewResult(1, 2))
 
@@ -292,7 +293,7 @@ func TestPostgresDatabaseService_GetPostTags(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	rows := sqlmock.NewRows([]string{"tag"}).
 		AddRow("tag1").
@@ -319,7 +320,7 @@ func TestPostgresDatabaseService_AddPostTags(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	tags := []string{"tag1", "tag2"}
 
@@ -344,7 +345,7 @@ func TestPostgresDatabaseService_DeletePostTags(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	tags := []string{"tag1", "tag2"}
 
@@ -369,7 +370,7 @@ func TestPostgresDatabaseService_GetPostPictureLinks(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	rows := sqlmock.NewRows([]string{"link"}).
 		AddRow("link1").
@@ -396,7 +397,7 @@ func TestPostgresDatabaseService_AddPostPictureLinks(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	pictureLinks := []string{"link1", "link2"}
 
@@ -421,7 +422,7 @@ func TestPostgresDatabaseService_DeletePostPictureLinks(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	pictureLinks := []string{"link1", "link2"}
 
@@ -446,7 +447,7 @@ func TestPostgresDatabaseService_GetPostCommentIds(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	rows := sqlmock.NewRows([]string{"comment_id"}).
 		AddRow("comment1").
@@ -473,7 +474,7 @@ func TestPostgresDatabaseService_AddPostCommentIds(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	commentIDs := []string{"comment1", "comment2"}
 
@@ -498,7 +499,7 @@ func TestPostgresDatabaseService_DeletePostCommentIds(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	commentIDs := []string{"comment1", "comment2"}
 
@@ -523,7 +524,7 @@ func TestPostgresDatabaseService_GetCommentById(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	// Mock data
 	commentID := "comment1"
@@ -561,7 +562,7 @@ func TestPostgresDatabaseService_SetCommentById(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	// Mock data
 	commentID := "comment1"
@@ -595,7 +596,7 @@ func TestPostgresDatabaseService_DeleteCommentById(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	commentID := "comment1"
 
@@ -619,7 +620,7 @@ func TestPostgresDatabaseService_GetUserById(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	expectedUser := &types.User{
 		UserId:             "user1",
@@ -651,7 +652,7 @@ func TestPostgresDatabaseService_SetUserById(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := NewPostgresDatabaseService(db)
+	service := postgres.NewPostgresDatabaseService(db)
 
 	user := &types.UserPtr{
 		Username:           strPtr("new_username"),

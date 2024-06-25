@@ -17,6 +17,10 @@ type DatabaseService interface {
 	AddPostLikedBy(ctx context.Context, postID string, userId []string) error
 	DeletePostLikedBy(ctx context.Context, postID string, userId []string) error
 
+	GetPostBookmarkedBy(ctx context.Context, postID string) ([]string, error)
+	AddPostBookmarkedBy(ctx context.Context, postID string, userId []string) error
+	DeletePostBookmarkedBy(ctx context.Context, postID string, userId []string) error
+
 	GetPostTags(ctx context.Context, postID string) ([]string, error)
 	AddPostTags(ctx context.Context, postID string, tags []string) error
 	DeletePostTags(ctx context.Context, postID string, tags []string) error
@@ -33,7 +37,13 @@ type DatabaseService interface {
 	SetCommentById(ctx context.Context, commentID string, comment *types.Comment) error
 	DeleteCommentById(ctx context.Context, commentID string) error
 
+	// About User
 	GetUserById(ctx context.Context, userID string) (*types.User, error)
+	GetUserByOauthInfo(ctx context.Context, email string, oauthProvider string) (*types.User, error)
 	SetUserById(ctx context.Context, userID string, user *types.UserPtr) error
-	DeleteUserById(ctx context.Context, userID string) error
+	SoftDeleteUserById(ctx context.Context, userID string) error
+	HardDeleteUserById(ctx context.Context, userID string) error
+
+	GetUserLikedPosts(ctx context.Context, userID string) ([]string, error)
+	GetUserBookmarkedPosts(ctx context.Context, userID string) ([]string, error)
 }

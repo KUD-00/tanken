@@ -1,10 +1,9 @@
-package db
+package postgres
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 	"strings"
 	"tanken/backend/common/types"
 
@@ -27,7 +26,7 @@ func (p *PostgresDatabaseService) GetPost(ctx context.Context, postID string) (*
             pt.tag AS tag,
             ppl.link AS picture_link
         FROM posts p
-        LEFT JOIN post_likes pl ON p.post_id = pl.post_id
+        LEFT JOIN user_liked_posts pl ON p.post_id = pl.post_id
         LEFT JOIN post_tags pt ON p.post_id = pt.post_id
         LEFT JOIN post_picture_links ppl ON p.post_id = ppl.post_id
         WHERE p.post_id = $1
@@ -196,7 +195,7 @@ func (p *PostgresDatabaseService) SetPostsDetails(ctx context.Context, posts []t
 }
 
 func (p *PostgresDatabaseService) GetPostLikedBy(ctx context.Context, postID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT user_id FROM post_likes WHERE post_id = $1", postID)
+	rows, err := p.db.QueryContext(ctx, "SELECT user_id FROM user_liked_posts WHERE post_id = $1", postID)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +218,7 @@ func (p *PostgresDatabaseService) AddPostLikedBy(ctx context.Context, postID str
 		return nil
 	}
 
-	query := "INSERT INTO post_likes (post_id, user_id) VALUES "
+	query := "INSERT INTO user_liked_posts (post_id, user_id) VALUES "
 	values := []interface{}{postID}
 	valueStrings := []string{}
 
@@ -243,7 +242,7 @@ func (p *PostgresDatabaseService) DeletePostLikedBy(ctx context.Context, postID 
 		return nil
 	}
 
-	query := "DELETE FROM post_likes WHERE post_id = $1 AND user_id = ANY($2)"
+	query := "DELETE FROM user_liked_posts WHERE post_id = $1 AND user_id = ANY($2)"
 	_, err := p.db.ExecContext(ctx, query, postID, pq.Array(userIDs))
 	if err != nil {
 		return err
@@ -362,37 +361,38 @@ func (p *PostgresDatabaseService) DeletePostPictureLinks(ctx context.Context, po
 	return nil
 }
 
-func (p *PostgresDatabaseService) GetPostCommentIds(ctx context.Context, postID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT comment_id FROM post_comments WHERE post_id = $1", postID)
+// check codes below
+func (p *PostgresDatabaseService) GetPostBookmarkedBy(ctx context.Context, postID string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT user_id FROM user_bookmarked_posts WHERE post_id = $1", postID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var commentIDs []string
+	var users []string
 	for rows.Next() {
-		var commentID string
-		if err := rows.Scan(&commentID); err != nil {
+		var user string
+		if err := rows.Scan(&user); err != nil {
 			return nil, err
 		}
-		commentIDs = append(commentIDs, commentID)
+		users = append(users, user)
 	}
 
-	return commentIDs, nil
+	return users, nil
 }
 
-func (p *PostgresDatabaseService) AddPostCommentIds(ctx context.Context, postID string, commentIDs []string) error {
-	if len(commentIDs) == 0 {
+func (p *PostgresDatabaseService) AddPostBookmarkedBy(ctx context.Context, postID string, userIDs []string) error {
+	if len(userIDs) == 0 {
 		return nil
 	}
 
-	query := "INSERT INTO post_comments (post_id, comment_id) VALUES "
+	query := "INSERT INTO user_bookmarked_posts (post_id, user_id) VALUES "
 	values := []interface{}{postID}
 	valueStrings := []string{}
 
-	for i, commentID := range commentIDs {
+	for i, userID := range userIDs {
 		valueStrings = append(valueStrings, fmt.Sprintf("($1, $%d)", i+2))
-		values = append(values, commentID)
+		values = append(values, userID)
 	}
 
 	query += strings.Join(valueStrings, ", ") + " ON CONFLICT DO NOTHING"
@@ -405,13 +405,13 @@ func (p *PostgresDatabaseService) AddPostCommentIds(ctx context.Context, postID 
 	return nil
 }
 
-func (p *PostgresDatabaseService) DeletePostCommentIds(ctx context.Context, postID string, commentIDs []string) error {
-	if len(commentIDs) == 0 {
+func (p *PostgresDatabaseService) DeletePostBookmarkedBy(ctx context.Context, postID string, userIDs []string) error {
+	if len(userIDs) == 0 {
 		return nil
 	}
 
-	query := "DELETE FROM post_comments WHERE post_id = $1 AND comment_id = ANY($2)"
-	_, err := p.db.ExecContext(ctx, query, postID, pq.Array(commentIDs))
+	query := "DELETE FROM user_bookmarked_posts WHERE post_id = $1 AND user_id = ANY($2)"
+	_, err := p.db.ExecContext(ctx, query, postID, pq.Array(userIDs))
 	if err != nil {
 		return err
 	}
@@ -419,137 +419,40 @@ func (p *PostgresDatabaseService) DeletePostCommentIds(ctx context.Context, post
 	return nil
 }
 
-func (p *PostgresDatabaseService) GetCommentById(ctx context.Context, commentID string) (*types.Comment, error) {
-	var comment types.Comment
-
-	err := p.db.QueryRowContext(ctx, "SELECT comment_id, post_id, user_id, content, created_at, updated_at, likes FROM comments WHERE comment_id = $1", commentID).Scan(
-		&comment.CommentId,
-		&comment.PostId,
-		&comment.UserId,
-		&comment.Content,
-		&comment.CreatedAt,
-		&comment.UpdatedAt,
-		&comment.Likes,
-	)
+func (p *PostgresDatabaseService) GetUserBookmarkedPosts(ctx context.Context, userID string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT post_id FROM user_bookmarked_posts WHERE user_id = $1", userID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &comment, nil
-}
-
-func (p *PostgresDatabaseService) SetCommentById(ctx context.Context, commentID string, comment *types.Comment) error {
-	_, err := p.db.ExecContext(ctx, "INSERT INTO comments (comment_id, post_id, user_id, content, created_at, updated_at, likes) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (comment_id) DO UPDATE SET post_id = EXCLUDED.post_id, user_id = EXCLUDED.user_id, content = EXCLUDED.content, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, likes = EXCLUDED.likes",
-		commentID,
-		comment.PostId,
-		comment.UserId,
-		comment.Content,
-		comment.CreatedAt,
-		comment.UpdatedAt,
-		comment.Likes,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *PostgresDatabaseService) DeleteCommentById(ctx context.Context, commentID string) error {
-	_, err := p.db.ExecContext(ctx, "DELETE FROM comments WHERE comment_id = $1", commentID)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *PostgresDatabaseService) GetUserById(ctx context.Context, userID string) (*types.User, error) {
-	var user types.User
-
-	err := p.db.QueryRowContext(ctx, "SELECT user_id, username, bio, profile_picture_link, subscribed FROM users WHERE user_id = $1", userID).Scan(
-		&user.UserId,
-		&user.Username,
-		&user.Bio,
-		&user.ProfilePictureLink,
-		&user.Subscribed,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return &types.User{}, nil
+	var posts []string
+	for rows.Next() {
+		var post string
+		if err := rows.Scan(&post); err != nil {
+			return nil, err
 		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+func (p *PostgresDatabaseService) GetUserLikedPosts(ctx context.Context, userID string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT post_id FROM user_liked_posts WHERE user_id = $1", userID)
+	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &user, nil
-}
-
-func (p *PostgresDatabaseService) SetUserById(ctx context.Context, userID string, user *types.UserPtr) error {
-	query := "INSERT INTO users (user_id"
-	values := []interface{}{userID}
-	updates := " ON CONFLICT (user_id) DO UPDATE SET"
-
-	index := 2 // 第一个占位符是userID
-
-	if user.Username != nil {
-		query += ", username"
-		values = append(values, *user.Username)
-		updates += " username = EXCLUDED.username,"
-		index++
-	}
-	if user.Bio != nil {
-		query += ", bio"
-		values = append(values, *user.Bio)
-		updates += " bio = EXCLUDED.bio,"
-		index++
-	}
-	if user.ProfilePictureLink != nil {
-		query += ", profile_picture_link"
-		values = append(values, *user.ProfilePictureLink)
-		updates += " profile_picture_link = EXCLUDED.profile_picture_link,"
-		index++
-	}
-	if user.Subscribed != nil {
-		query += ", subscribed"
-		values = append(values, *user.Subscribed)
-		updates += " subscribed = EXCLUDED.subscribed,"
-		index++
-	}
-	if user.Email != nil {
-		query += ", email"
-		values = append(values, *user.Email)
-		updates += " email = EXCLUDED.email,"
-		index++
-	}
-	if user.OauthProvider != nil {
-		query += ", oauth_provider"
-		values = append(values, *user.OauthProvider)
-		updates += " oauth_provider = EXCLUDED.oauth_provider,"
-		index++
+	var posts []string
+	for rows.Next() {
+		var post string
+		if err := rows.Scan(&post); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
 	}
 
-	query += ") VALUES ($1"
-	for i := 2; i < index; i++ {
-		query += ", $" + strconv.Itoa(i)
-	}
-	query += ")"
-
-	updates = updates[:len(updates)-1] // 去掉最后的逗号
-	query += updates
-
-	_, err := p.db.ExecContext(ctx, query, values...)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *PostgresDatabaseService) DeleteUserById(ctx context.Context, userID string) error {
-	_, err := p.db.ExecContext(ctx, "DELETE FROM users WHERE user_id = $1", userID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return posts, nil
 }

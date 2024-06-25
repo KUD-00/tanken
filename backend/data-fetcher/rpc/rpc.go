@@ -18,6 +18,7 @@ import (
 	utils "tanken/backend/data-fetcher/utils"
 
 	"connectrpc.com/connect"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/net/http2"
@@ -25,11 +26,11 @@ import (
 )
 
 type server struct {
-	db        *database.PostgresDatabaseService
-	postCache *cache.PostRedisCacheService
-	geoCache  *cache.GeoRedisCacheService
-	userCache *cache.UserRedisCacheService
-	// uploader       *s3manager.Uploader
+	db         *database.PostgresDatabaseService
+	postCache  *cache.PostRedisCacheService
+	geoCache   *cache.GeoRedisCacheService
+	userCache  *cache.UserRedisCacheService
+	uploaderS3 *s3manager.Uploader
 }
 
 func (s *server) GetPostsByLocation(ctx context.Context, req *connect.Request[pb.GetPostsByLocationRequest]) (*connect.Response[pb.GetPostsByLocationResponse], error) {
@@ -129,6 +130,11 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 		return newUploadErrorResponse("Failed to get or register new postId: " + err.Error()), nil
 	}
 
+	pictureLink, err := uploadPictureToS3(ctx, req.Msg.PictureChunk, s.uploaderS3, postID)
+	if err != nil {
+		return newUploadErrorResponse("Failed to upload picture to S3: " + err.Error()), nil
+	}
+
 	err = registerPostToGeoRedis(ctx, postID, longitude, latitude, s.geoCache)
 	if err != nil {
 		return newUploadErrorResponse("Failed to register new postId to geo-redis: " + err.Error()), nil
@@ -150,7 +156,7 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 
 	s.postCache.SetPostDetails(ctx, postID, details)
 	s.postCache.AddPostTags(ctx, postID, req.Msg.Tags)
-	s.postCache.AddPostPictureLinks(ctx, postID, []string{})
+	s.postCache.AddPostPictureLinks(ctx, postID, []string{pictureLink})
 
 	_, err = pipe.Exec(ctx)
 
@@ -218,25 +224,46 @@ func (s *server) WriteBackCache(ctx context.Context, req *connect.Request[pb.Wri
 }
 
 func (s *server) GetUserInfoByOAuth(ctx context.Context, req *connect.Request[pb.GetUserInfoByOAuthRequest]) (*connect.Response[pb.GetUserInfoByOAuthResponse], error) {
-	user := pb.User{}
+	user, err := s.db.GetUserByOauthInfo(ctx, req.Msg.Email, req.Msg.Provider)
+	if err != nil {
+		return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 0, Msg: err.Error()}), nil
+	}
 
-	//TODO:
-	/* 	err := s.db.QueryRowContext(ctx, "SELECT user_id, username, bio FROM users WHERE email = $1 AND provider = $2", req.Msg.Email, req.Msg.Provider).Scan(&user.UserId, &user.UserName, &user.Bio)
-	   	if err != nil {
-	   		if err == sql.ErrNoRows {
-	   			return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 2, Msg: "User not found"}), nil
-	   		}
-	   		return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 0, Msg: err.Error()}), nil
-	   	} */
+	pbUser := &pb.User{
+		UserId:             user.UserId,
+		UserName:           user.Username,
+		Bio:                user.Bio,
+		ProfilePictureLink: user.ProfilePictureLink,
+		Subscribed:         user.Subscribed,
+	}
 
-	return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 1, User: &user}), nil
+	return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 1, User: pbUser}), nil
 }
 
 func (s *server) HardDeleteUser(ctx context.Context, req *connect.Request[pb.HardDeleteUserRequest]) (*connect.Response[pb.HardDeleteUserResponse], error) {
+	err := s.userCache.RemoveUser(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteUserResponse{Ok: 0, Msg: "Error in hard delete user in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.HardDeleteUserById(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteUserResponse{Ok: 0, Msg: "Error in hard delete user in db:" + err.Error()}), nil
+	}
+
 	return connect.NewResponse(&pb.HardDeleteUserResponse{}), nil
 }
 
 func (s *server) SoftDeleteUser(ctx context.Context, req *connect.Request[pb.SoftDeleteUserRequest]) (*connect.Response[pb.SoftDeleteUserResponse], error) {
+	err := s.userCache.RemoveUser(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteUserResponse{Ok: 0, Msg: "Error in soft delete user in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.SoftDeleteUserById(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteUserResponse{Ok: 0, Msg: "Error in soft delete user in db:" + err.Error()}), nil
+	}
 	return connect.NewResponse(&pb.SoftDeleteUserResponse{}), nil
 }
 
@@ -319,13 +346,13 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func StartServer(geoCache *redis.Client, postCache *redis.Client, userCache *redis.Client, db *sql.DB) {
+func StartServer(geoCache *redis.Client, postCache *redis.Client, userCache *redis.Client, db *sql.DB, uploaderS3 *s3manager.Uploader) {
 	srv := &server{
-		geoCache:  cache.NewGeoRedisCacheService(geoCache),
-		postCache: cache.NewPostRedisCacheService(postCache),
-		userCache: cache.NewUserRedisCacheService(userCache),
-		db:        database.NewPostgresDatabaseService(db),
-		// 		uploader:       uploader,
+		geoCache:   cache.NewGeoRedisCacheService(geoCache),
+		postCache:  cache.NewPostRedisCacheService(postCache),
+		userCache:  cache.NewUserRedisCacheService(userCache),
+		db:         database.NewPostgresDatabaseService(db),
+		uploaderS3: uploaderS3,
 	}
 
 	mux := http.NewServeMux()
