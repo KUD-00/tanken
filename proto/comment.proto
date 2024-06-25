@@ -27,14 +27,14 @@ message RemoveCommentResponse {
   string msg = 2;
 }
 
-message GetCommentByCommentIdRequest {
-  string commentId = 1;
+message GetCommentsByCommentIdsRequest {
+  repeated string commentId = 1;
 }
 
-message GetCommentByCommentIdResponse {
+message GetCommentsByCommentIdsResponse {
   int64 ok = 1;
   string msg = 2;
-  Comment comment = 3;
+  repeated Comment comment = 3;
 }
 
 message GetCommentsByPostIdRequest {

@@ -72,6 +72,15 @@ const (
 	// DataFetcherServiceRemoveCommentProcedure is the fully-qualified name of the DataFetcherService's
 	// RemoveComment RPC.
 	DataFetcherServiceRemoveCommentProcedure = "/rpc.DataFetcherService/RemoveComment"
+	// DataFetcherServiceModifyCommentProcedure is the fully-qualified name of the DataFetcherService's
+	// ModifyComment RPC.
+	DataFetcherServiceModifyCommentProcedure = "/rpc.DataFetcherService/ModifyComment"
+	// DataFetcherServiceGetCommentsByCommentIdsProcedure is the fully-qualified name of the
+	// DataFetcherService's GetCommentsByCommentIds RPC.
+	DataFetcherServiceGetCommentsByCommentIdsProcedure = "/rpc.DataFetcherService/GetCommentsByCommentIds"
+	// DataFetcherServiceGetCommentsByPostIdProcedure is the fully-qualified name of the
+	// DataFetcherService's GetCommentsByPostId RPC.
+	DataFetcherServiceGetCommentsByPostIdProcedure = "/rpc.DataFetcherService/GetCommentsByPostId"
 	// DataFetcherServiceGetUserInfoProcedure is the fully-qualified name of the DataFetcherService's
 	// GetUserInfo RPC.
 	DataFetcherServiceGetUserInfoProcedure = "/rpc.DataFetcherService/GetUserInfo"
@@ -94,26 +103,29 @@ const (
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	dataFetcherServiceServiceDescriptor                  = pb.File_data_fetcher_service_proto.Services().ByName("DataFetcherService")
-	dataFetcherServiceTestConnectionMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("TestConnection")
-	dataFetcherServiceGetPostsByLocationMethodDescriptor = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByLocation")
-	dataFetcherServiceGetPostsByPostIdsMethodDescriptor  = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByPostIds")
-	dataFetcherServiceGetPostsByUserMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByUser")
-	dataFetcherServiceAddPostMethodDescriptor            = dataFetcherServiceServiceDescriptor.Methods().ByName("AddPost")
-	dataFetcherServiceHardDeletePostMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("HardDeletePost")
-	dataFetcherServiceSoftDeletePostMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("SoftDeletePost")
-	dataFetcherServiceAddLikeMethodDescriptor            = dataFetcherServiceServiceDescriptor.Methods().ByName("AddLike")
-	dataFetcherServiceRemoveLikeMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveLike")
-	dataFetcherServiceAddBookmarkMethodDescriptor        = dataFetcherServiceServiceDescriptor.Methods().ByName("AddBookmark")
-	dataFetcherServiceRemoveBookmarkMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveBookmark")
-	dataFetcherServiceAddCommentMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("AddComment")
-	dataFetcherServiceRemoveCommentMethodDescriptor      = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveComment")
-	dataFetcherServiceGetUserInfoMethodDescriptor        = dataFetcherServiceServiceDescriptor.Methods().ByName("GetUserInfo")
-	dataFetcherServiceSignUpUserMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("SignUpUser")
-	dataFetcherServiceUpdateUserMethodDescriptor         = dataFetcherServiceServiceDescriptor.Methods().ByName("UpdateUser")
-	dataFetcherServiceHardDeleteUserMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("HardDeleteUser")
-	dataFetcherServiceSoftDeleteUserMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("SoftDeleteUser")
-	dataFetcherServiceGetUserInfoByOAuthMethodDescriptor = dataFetcherServiceServiceDescriptor.Methods().ByName("GetUserInfoByOAuth")
+	dataFetcherServiceServiceDescriptor                       = pb.File_data_fetcher_service_proto.Services().ByName("DataFetcherService")
+	dataFetcherServiceTestConnectionMethodDescriptor          = dataFetcherServiceServiceDescriptor.Methods().ByName("TestConnection")
+	dataFetcherServiceGetPostsByLocationMethodDescriptor      = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByLocation")
+	dataFetcherServiceGetPostsByPostIdsMethodDescriptor       = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByPostIds")
+	dataFetcherServiceGetPostsByUserMethodDescriptor          = dataFetcherServiceServiceDescriptor.Methods().ByName("GetPostsByUser")
+	dataFetcherServiceAddPostMethodDescriptor                 = dataFetcherServiceServiceDescriptor.Methods().ByName("AddPost")
+	dataFetcherServiceHardDeletePostMethodDescriptor          = dataFetcherServiceServiceDescriptor.Methods().ByName("HardDeletePost")
+	dataFetcherServiceSoftDeletePostMethodDescriptor          = dataFetcherServiceServiceDescriptor.Methods().ByName("SoftDeletePost")
+	dataFetcherServiceAddLikeMethodDescriptor                 = dataFetcherServiceServiceDescriptor.Methods().ByName("AddLike")
+	dataFetcherServiceRemoveLikeMethodDescriptor              = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveLike")
+	dataFetcherServiceAddBookmarkMethodDescriptor             = dataFetcherServiceServiceDescriptor.Methods().ByName("AddBookmark")
+	dataFetcherServiceRemoveBookmarkMethodDescriptor          = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveBookmark")
+	dataFetcherServiceAddCommentMethodDescriptor              = dataFetcherServiceServiceDescriptor.Methods().ByName("AddComment")
+	dataFetcherServiceRemoveCommentMethodDescriptor           = dataFetcherServiceServiceDescriptor.Methods().ByName("RemoveComment")
+	dataFetcherServiceModifyCommentMethodDescriptor           = dataFetcherServiceServiceDescriptor.Methods().ByName("ModifyComment")
+	dataFetcherServiceGetCommentsByCommentIdsMethodDescriptor = dataFetcherServiceServiceDescriptor.Methods().ByName("GetCommentsByCommentIds")
+	dataFetcherServiceGetCommentsByPostIdMethodDescriptor     = dataFetcherServiceServiceDescriptor.Methods().ByName("GetCommentsByPostId")
+	dataFetcherServiceGetUserInfoMethodDescriptor             = dataFetcherServiceServiceDescriptor.Methods().ByName("GetUserInfo")
+	dataFetcherServiceSignUpUserMethodDescriptor              = dataFetcherServiceServiceDescriptor.Methods().ByName("SignUpUser")
+	dataFetcherServiceUpdateUserMethodDescriptor              = dataFetcherServiceServiceDescriptor.Methods().ByName("UpdateUser")
+	dataFetcherServiceHardDeleteUserMethodDescriptor          = dataFetcherServiceServiceDescriptor.Methods().ByName("HardDeleteUser")
+	dataFetcherServiceSoftDeleteUserMethodDescriptor          = dataFetcherServiceServiceDescriptor.Methods().ByName("SoftDeleteUser")
+	dataFetcherServiceGetUserInfoByOAuthMethodDescriptor      = dataFetcherServiceServiceDescriptor.Methods().ByName("GetUserInfoByOAuth")
 )
 
 // DataFetcherServiceClient is a client for the rpc.DataFetcherService service.
@@ -131,6 +143,9 @@ type DataFetcherServiceClient interface {
 	RemoveBookmark(context.Context, *connect.Request[pb.RemoveBookmarkRequest]) (*connect.Response[pb.RemoveBookmarkResponse], error)
 	AddComment(context.Context, *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error)
 	RemoveComment(context.Context, *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error)
+	ModifyComment(context.Context, *connect.Request[pb.ModifyCommentRequest]) (*connect.Response[pb.ModifyCommentResponse], error)
+	GetCommentsByCommentIds(context.Context, *connect.Request[pb.GetCommentsByCommentIdsRequest]) (*connect.Response[pb.GetCommentsByCommentIdsResponse], error)
+	GetCommentsByPostId(context.Context, *connect.Request[pb.GetCommentsByPostIdRequest]) (*connect.Response[pb.GetCommentsByPostIdResponse], error)
 	GetUserInfo(context.Context, *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error)
 	SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error)
 	UpdateUser(context.Context, *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error)
@@ -227,6 +242,24 @@ func NewDataFetcherServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(dataFetcherServiceRemoveCommentMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		modifyComment: connect.NewClient[pb.ModifyCommentRequest, pb.ModifyCommentResponse](
+			httpClient,
+			baseURL+DataFetcherServiceModifyCommentProcedure,
+			connect.WithSchema(dataFetcherServiceModifyCommentMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		getCommentsByCommentIds: connect.NewClient[pb.GetCommentsByCommentIdsRequest, pb.GetCommentsByCommentIdsResponse](
+			httpClient,
+			baseURL+DataFetcherServiceGetCommentsByCommentIdsProcedure,
+			connect.WithSchema(dataFetcherServiceGetCommentsByCommentIdsMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		getCommentsByPostId: connect.NewClient[pb.GetCommentsByPostIdRequest, pb.GetCommentsByPostIdResponse](
+			httpClient,
+			baseURL+DataFetcherServiceGetCommentsByPostIdProcedure,
+			connect.WithSchema(dataFetcherServiceGetCommentsByPostIdMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		getUserInfo: connect.NewClient[pb.GetUserInfoRequest, pb.GetUserInfoResponse](
 			httpClient,
 			baseURL+DataFetcherServiceGetUserInfoProcedure,
@@ -268,25 +301,28 @@ func NewDataFetcherServiceClient(httpClient connect.HTTPClient, baseURL string, 
 
 // dataFetcherServiceClient implements DataFetcherServiceClient.
 type dataFetcherServiceClient struct {
-	testConnection     *connect.Client[pb.TestConnectionRequest, pb.TestConnectionResponse]
-	getPostsByLocation *connect.Client[pb.GetPostsByLocationRequest, pb.GetPostsByLocationResponse]
-	getPostsByPostIds  *connect.Client[pb.GetPostsByPostIdsRequest, pb.GetPostsByPostIdsResponse]
-	getPostsByUser     *connect.Client[pb.GetPostsByUserIdRequest, pb.GetPostsByUserIdResponse]
-	addPost            *connect.Client[pb.AddPostRequest, pb.AddPostResponse]
-	hardDeletePost     *connect.Client[pb.HardDeletePostRequest, pb.HardDeletePostResponse]
-	softDeletePost     *connect.Client[pb.SoftDeletePostRequest, pb.SoftDeletePostResponse]
-	addLike            *connect.Client[pb.AddLikeRequest, pb.AddLikeResponse]
-	removeLike         *connect.Client[pb.RemoveLikeRequest, pb.RemoveLikeResponse]
-	addBookmark        *connect.Client[pb.AddBookmarkRequest, pb.AddBookmarkResponse]
-	removeBookmark     *connect.Client[pb.RemoveBookmarkRequest, pb.RemoveBookmarkResponse]
-	addComment         *connect.Client[pb.AddCommentRequest, pb.AddCommentResponse]
-	removeComment      *connect.Client[pb.RemoveCommentRequest, pb.RemoveCommentResponse]
-	getUserInfo        *connect.Client[pb.GetUserInfoRequest, pb.GetUserInfoResponse]
-	signUpUser         *connect.Client[pb.SignUpUserRequest, pb.SignUpUserResponse]
-	updateUser         *connect.Client[pb.UpdateUserRequest, pb.UpdateUserResponse]
-	hardDeleteUser     *connect.Client[pb.HardDeleteUserRequest, pb.HardDeleteUserResponse]
-	softDeleteUser     *connect.Client[pb.SoftDeleteUserRequest, pb.SoftDeleteUserResponse]
-	getUserInfoByOAuth *connect.Client[pb.GetUserInfoByOAuthRequest, pb.GetUserInfoByOAuthResponse]
+	testConnection          *connect.Client[pb.TestConnectionRequest, pb.TestConnectionResponse]
+	getPostsByLocation      *connect.Client[pb.GetPostsByLocationRequest, pb.GetPostsByLocationResponse]
+	getPostsByPostIds       *connect.Client[pb.GetPostsByPostIdsRequest, pb.GetPostsByPostIdsResponse]
+	getPostsByUser          *connect.Client[pb.GetPostsByUserIdRequest, pb.GetPostsByUserIdResponse]
+	addPost                 *connect.Client[pb.AddPostRequest, pb.AddPostResponse]
+	hardDeletePost          *connect.Client[pb.HardDeletePostRequest, pb.HardDeletePostResponse]
+	softDeletePost          *connect.Client[pb.SoftDeletePostRequest, pb.SoftDeletePostResponse]
+	addLike                 *connect.Client[pb.AddLikeRequest, pb.AddLikeResponse]
+	removeLike              *connect.Client[pb.RemoveLikeRequest, pb.RemoveLikeResponse]
+	addBookmark             *connect.Client[pb.AddBookmarkRequest, pb.AddBookmarkResponse]
+	removeBookmark          *connect.Client[pb.RemoveBookmarkRequest, pb.RemoveBookmarkResponse]
+	addComment              *connect.Client[pb.AddCommentRequest, pb.AddCommentResponse]
+	removeComment           *connect.Client[pb.RemoveCommentRequest, pb.RemoveCommentResponse]
+	modifyComment           *connect.Client[pb.ModifyCommentRequest, pb.ModifyCommentResponse]
+	getCommentsByCommentIds *connect.Client[pb.GetCommentsByCommentIdsRequest, pb.GetCommentsByCommentIdsResponse]
+	getCommentsByPostId     *connect.Client[pb.GetCommentsByPostIdRequest, pb.GetCommentsByPostIdResponse]
+	getUserInfo             *connect.Client[pb.GetUserInfoRequest, pb.GetUserInfoResponse]
+	signUpUser              *connect.Client[pb.SignUpUserRequest, pb.SignUpUserResponse]
+	updateUser              *connect.Client[pb.UpdateUserRequest, pb.UpdateUserResponse]
+	hardDeleteUser          *connect.Client[pb.HardDeleteUserRequest, pb.HardDeleteUserResponse]
+	softDeleteUser          *connect.Client[pb.SoftDeleteUserRequest, pb.SoftDeleteUserResponse]
+	getUserInfoByOAuth      *connect.Client[pb.GetUserInfoByOAuthRequest, pb.GetUserInfoByOAuthResponse]
 }
 
 // TestConnection calls rpc.DataFetcherService.TestConnection.
@@ -354,6 +390,21 @@ func (c *dataFetcherServiceClient) RemoveComment(ctx context.Context, req *conne
 	return c.removeComment.CallUnary(ctx, req)
 }
 
+// ModifyComment calls rpc.DataFetcherService.ModifyComment.
+func (c *dataFetcherServiceClient) ModifyComment(ctx context.Context, req *connect.Request[pb.ModifyCommentRequest]) (*connect.Response[pb.ModifyCommentResponse], error) {
+	return c.modifyComment.CallUnary(ctx, req)
+}
+
+// GetCommentsByCommentIds calls rpc.DataFetcherService.GetCommentsByCommentIds.
+func (c *dataFetcherServiceClient) GetCommentsByCommentIds(ctx context.Context, req *connect.Request[pb.GetCommentsByCommentIdsRequest]) (*connect.Response[pb.GetCommentsByCommentIdsResponse], error) {
+	return c.getCommentsByCommentIds.CallUnary(ctx, req)
+}
+
+// GetCommentsByPostId calls rpc.DataFetcherService.GetCommentsByPostId.
+func (c *dataFetcherServiceClient) GetCommentsByPostId(ctx context.Context, req *connect.Request[pb.GetCommentsByPostIdRequest]) (*connect.Response[pb.GetCommentsByPostIdResponse], error) {
+	return c.getCommentsByPostId.CallUnary(ctx, req)
+}
+
 // GetUserInfo calls rpc.DataFetcherService.GetUserInfo.
 func (c *dataFetcherServiceClient) GetUserInfo(ctx context.Context, req *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error) {
 	return c.getUserInfo.CallUnary(ctx, req)
@@ -399,6 +450,9 @@ type DataFetcherServiceHandler interface {
 	RemoveBookmark(context.Context, *connect.Request[pb.RemoveBookmarkRequest]) (*connect.Response[pb.RemoveBookmarkResponse], error)
 	AddComment(context.Context, *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error)
 	RemoveComment(context.Context, *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error)
+	ModifyComment(context.Context, *connect.Request[pb.ModifyCommentRequest]) (*connect.Response[pb.ModifyCommentResponse], error)
+	GetCommentsByCommentIds(context.Context, *connect.Request[pb.GetCommentsByCommentIdsRequest]) (*connect.Response[pb.GetCommentsByCommentIdsResponse], error)
+	GetCommentsByPostId(context.Context, *connect.Request[pb.GetCommentsByPostIdRequest]) (*connect.Response[pb.GetCommentsByPostIdResponse], error)
 	GetUserInfo(context.Context, *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error)
 	SignUpUser(context.Context, *connect.Request[pb.SignUpUserRequest]) (*connect.Response[pb.SignUpUserResponse], error)
 	UpdateUser(context.Context, *connect.Request[pb.UpdateUserRequest]) (*connect.Response[pb.UpdateUserResponse], error)
@@ -491,6 +545,24 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 		connect.WithSchema(dataFetcherServiceRemoveCommentMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	dataFetcherServiceModifyCommentHandler := connect.NewUnaryHandler(
+		DataFetcherServiceModifyCommentProcedure,
+		svc.ModifyComment,
+		connect.WithSchema(dataFetcherServiceModifyCommentMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataFetcherServiceGetCommentsByCommentIdsHandler := connect.NewUnaryHandler(
+		DataFetcherServiceGetCommentsByCommentIdsProcedure,
+		svc.GetCommentsByCommentIds,
+		connect.WithSchema(dataFetcherServiceGetCommentsByCommentIdsMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	dataFetcherServiceGetCommentsByPostIdHandler := connect.NewUnaryHandler(
+		DataFetcherServiceGetCommentsByPostIdProcedure,
+		svc.GetCommentsByPostId,
+		connect.WithSchema(dataFetcherServiceGetCommentsByPostIdMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	dataFetcherServiceGetUserInfoHandler := connect.NewUnaryHandler(
 		DataFetcherServiceGetUserInfoProcedure,
 		svc.GetUserInfo,
@@ -555,6 +627,12 @@ func NewDataFetcherServiceHandler(svc DataFetcherServiceHandler, opts ...connect
 			dataFetcherServiceAddCommentHandler.ServeHTTP(w, r)
 		case DataFetcherServiceRemoveCommentProcedure:
 			dataFetcherServiceRemoveCommentHandler.ServeHTTP(w, r)
+		case DataFetcherServiceModifyCommentProcedure:
+			dataFetcherServiceModifyCommentHandler.ServeHTTP(w, r)
+		case DataFetcherServiceGetCommentsByCommentIdsProcedure:
+			dataFetcherServiceGetCommentsByCommentIdsHandler.ServeHTTP(w, r)
+		case DataFetcherServiceGetCommentsByPostIdProcedure:
+			dataFetcherServiceGetCommentsByPostIdHandler.ServeHTTP(w, r)
 		case DataFetcherServiceGetUserInfoProcedure:
 			dataFetcherServiceGetUserInfoHandler.ServeHTTP(w, r)
 		case DataFetcherServiceSignUpUserProcedure:
@@ -626,6 +704,18 @@ func (UnimplementedDataFetcherServiceHandler) AddComment(context.Context, *conne
 
 func (UnimplementedDataFetcherServiceHandler) RemoveComment(context.Context, *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.RemoveComment is not implemented"))
+}
+
+func (UnimplementedDataFetcherServiceHandler) ModifyComment(context.Context, *connect.Request[pb.ModifyCommentRequest]) (*connect.Response[pb.ModifyCommentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.ModifyComment is not implemented"))
+}
+
+func (UnimplementedDataFetcherServiceHandler) GetCommentsByCommentIds(context.Context, *connect.Request[pb.GetCommentsByCommentIdsRequest]) (*connect.Response[pb.GetCommentsByCommentIdsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.GetCommentsByCommentIds is not implemented"))
+}
+
+func (UnimplementedDataFetcherServiceHandler) GetCommentsByPostId(context.Context, *connect.Request[pb.GetCommentsByPostIdRequest]) (*connect.Response[pb.GetCommentsByPostIdResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rpc.DataFetcherService.GetCommentsByPostId is not implemented"))
 }
 
 func (UnimplementedDataFetcherServiceHandler) GetUserInfo(context.Context, *connect.Request[pb.GetUserInfoRequest]) (*connect.Response[pb.GetUserInfoResponse], error) {

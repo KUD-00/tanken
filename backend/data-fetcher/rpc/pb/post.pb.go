@@ -1531,250 +1531,6 @@ func (x *GetBookmarksResponse) GetPosts() []*Post {
 	return nil
 }
 
-type AddCommentRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	UserId  string `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	PostId  string `protobuf:"bytes,2,opt,name=postId,proto3" json:"postId,omitempty"`
-	Content string `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
-}
-
-func (x *AddCommentRequest) Reset() {
-	*x = AddCommentRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_post_proto_msgTypes[25]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AddCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddCommentRequest) ProtoMessage() {}
-
-func (x *AddCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_post_proto_msgTypes[25]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddCommentRequest.ProtoReflect.Descriptor instead.
-func (*AddCommentRequest) Descriptor() ([]byte, []int) {
-	return file_post_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *AddCommentRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *AddCommentRequest) GetPostId() string {
-	if x != nil {
-		return x.PostId
-	}
-	return ""
-}
-
-func (x *AddCommentRequest) GetContent() string {
-	if x != nil {
-		return x.Content
-	}
-	return ""
-}
-
-type AddCommentResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Ok        int64  `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
-	Msg       string `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	CommentId string `protobuf:"bytes,3,opt,name=commentId,proto3" json:"commentId,omitempty"`
-}
-
-func (x *AddCommentResponse) Reset() {
-	*x = AddCommentResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_post_proto_msgTypes[26]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AddCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddCommentResponse) ProtoMessage() {}
-
-func (x *AddCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_post_proto_msgTypes[26]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddCommentResponse.ProtoReflect.Descriptor instead.
-func (*AddCommentResponse) Descriptor() ([]byte, []int) {
-	return file_post_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *AddCommentResponse) GetOk() int64 {
-	if x != nil {
-		return x.Ok
-	}
-	return 0
-}
-
-func (x *AddCommentResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
-func (x *AddCommentResponse) GetCommentId() string {
-	if x != nil {
-		return x.CommentId
-	}
-	return ""
-}
-
-type RemoveCommentRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	UserId    string `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	PostId    string `protobuf:"bytes,2,opt,name=postId,proto3" json:"postId,omitempty"`
-	CommentId string `protobuf:"bytes,3,opt,name=commentId,proto3" json:"commentId,omitempty"`
-}
-
-func (x *RemoveCommentRequest) Reset() {
-	*x = RemoveCommentRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_post_proto_msgTypes[27]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RemoveCommentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RemoveCommentRequest) ProtoMessage() {}
-
-func (x *RemoveCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_post_proto_msgTypes[27]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RemoveCommentRequest.ProtoReflect.Descriptor instead.
-func (*RemoveCommentRequest) Descriptor() ([]byte, []int) {
-	return file_post_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *RemoveCommentRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *RemoveCommentRequest) GetPostId() string {
-	if x != nil {
-		return x.PostId
-	}
-	return ""
-}
-
-func (x *RemoveCommentRequest) GetCommentId() string {
-	if x != nil {
-		return x.CommentId
-	}
-	return ""
-}
-
-type RemoveCommentResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Ok  int64  `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
-	Msg string `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-}
-
-func (x *RemoveCommentResponse) Reset() {
-	*x = RemoveCommentResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_post_proto_msgTypes[28]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *RemoveCommentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RemoveCommentResponse) ProtoMessage() {}
-
-func (x *RemoveCommentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_post_proto_msgTypes[28]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RemoveCommentResponse.ProtoReflect.Descriptor instead.
-func (*RemoveCommentResponse) Descriptor() ([]byte, []int) {
-	return file_post_proto_rawDescGZIP(), []int{28}
-}
-
-func (x *RemoveCommentResponse) GetOk() int64 {
-	if x != nil {
-		return x.Ok
-	}
-	return 0
-}
-
-func (x *RemoveCommentResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
 var File_post_proto protoreflect.FileDescriptor
 
 var file_post_proto_rawDesc = []byte{
@@ -1917,36 +1673,14 @@ var file_post_proto_rawDesc = []byte{
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x6f, 0x6b, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73,
 	0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d, 0x73, 0x67, 0x12, 0x1f, 0x0a, 0x05,
 	0x70, 0x6f, 0x73, 0x74, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x72, 0x70,
-	0x63, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x05, 0x70, 0x6f, 0x73, 0x74, 0x73, 0x22, 0x5d, 0x0a,
-	0x11, 0x41, 0x64, 0x64, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x6f,
-	0x73, 0x74, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x6f, 0x73, 0x74,
-	0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x54, 0x0a, 0x12,
-	0x41, 0x64, 0x64, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02,
-	0x6f, 0x6b, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x03, 0x6d, 0x73, 0x67, 0x12, 0x1c, 0x0a, 0x09, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x49,
-	0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74,
-	0x49, 0x64, 0x22, 0x64, 0x0a, 0x14, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x43, 0x6f, 0x6d, 0x6d,
-	0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x75, 0x73,
-	0x65, 0x72, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72,
-	0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x70, 0x6f, 0x73, 0x74, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x63, 0x6f,
-	0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x63,
-	0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x39, 0x0a, 0x15, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x43, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x6f,
-	0x6b, 0x12, 0x10, 0x0a, 0x03, 0x6d, 0x73, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
-	0x6d, 0x73, 0x67, 0x42, 0x64, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x2e, 0x72, 0x70, 0x63, 0x42, 0x09,
-	0x50, 0x6f, 0x73, 0x74, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x22, 0x74, 0x61, 0x6e,
-	0x6b, 0x65, 0x6e, 0x2f, 0x62, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x64, 0x61, 0x74, 0x61,
-	0x2d, 0x66, 0x65, 0x74, 0x63, 0x68, 0x65, 0x72, 0x2f, 0x72, 0x70, 0x63, 0x2f, 0x70, 0x62, 0xa2,
-	0x02, 0x03, 0x52, 0x58, 0x58, 0xaa, 0x02, 0x03, 0x52, 0x70, 0x63, 0xca, 0x02, 0x03, 0x52, 0x70,
-	0x63, 0xe2, 0x02, 0x0f, 0x52, 0x70, 0x63, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0xea, 0x02, 0x03, 0x52, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x63, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x52, 0x05, 0x70, 0x6f, 0x73, 0x74, 0x73, 0x42, 0x64, 0x0a,
+	0x07, 0x63, 0x6f, 0x6d, 0x2e, 0x72, 0x70, 0x63, 0x42, 0x09, 0x50, 0x6f, 0x73, 0x74, 0x50, 0x72,
+	0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x22, 0x74, 0x61, 0x6e, 0x6b, 0x65, 0x6e, 0x2f, 0x62, 0x61,
+	0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x64, 0x61, 0x74, 0x61, 0x2d, 0x66, 0x65, 0x74, 0x63, 0x68,
+	0x65, 0x72, 0x2f, 0x72, 0x70, 0x63, 0x2f, 0x70, 0x62, 0xa2, 0x02, 0x03, 0x52, 0x58, 0x58, 0xaa,
+	0x02, 0x03, 0x52, 0x70, 0x63, 0xca, 0x02, 0x03, 0x52, 0x70, 0x63, 0xe2, 0x02, 0x0f, 0x52, 0x70,
+	0x63, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x03,
+	0x52, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1961,7 +1695,7 @@ func file_post_proto_rawDescGZIP() []byte {
 	return file_post_proto_rawDescData
 }
 
-var file_post_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_post_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_post_proto_goTypes = []interface{}{
 	(*Post)(nil),                       // 0: rpc.Post
 	(*GetPostsByLocationRequest)(nil),  // 1: rpc.GetPostsByLocationRequest
@@ -1988,23 +1722,19 @@ var file_post_proto_goTypes = []interface{}{
 	(*RemoveBookmarkResponse)(nil),     // 22: rpc.RemoveBookmarkResponse
 	(*GetBookmarksRequest)(nil),        // 23: rpc.GetBookmarksRequest
 	(*GetBookmarksResponse)(nil),       // 24: rpc.GetBookmarksResponse
-	(*AddCommentRequest)(nil),          // 25: rpc.AddCommentRequest
-	(*AddCommentResponse)(nil),         // 26: rpc.AddCommentResponse
-	(*RemoveCommentRequest)(nil),       // 27: rpc.RemoveCommentRequest
-	(*RemoveCommentResponse)(nil),      // 28: rpc.RemoveCommentResponse
-	(*User)(nil),                       // 29: rpc.User
-	(*Location)(nil),                   // 30: rpc.Location
-	(*Comment)(nil),                    // 31: rpc.Comment
+	(*User)(nil),                       // 25: rpc.User
+	(*Location)(nil),                   // 26: rpc.Location
+	(*Comment)(nil),                    // 27: rpc.Comment
 }
 var file_post_proto_depIdxs = []int32{
-	29, // 0: rpc.Post.author:type_name -> rpc.User
-	30, // 1: rpc.Post.location:type_name -> rpc.Location
-	31, // 2: rpc.Post.comments:type_name -> rpc.Comment
-	30, // 3: rpc.GetPostsByLocationRequest.location:type_name -> rpc.Location
+	25, // 0: rpc.Post.author:type_name -> rpc.User
+	26, // 1: rpc.Post.location:type_name -> rpc.Location
+	27, // 2: rpc.Post.comments:type_name -> rpc.Comment
+	26, // 3: rpc.GetPostsByLocationRequest.location:type_name -> rpc.Location
 	0,  // 4: rpc.GetPostsByLocationResponse.posts:type_name -> rpc.Post
 	0,  // 5: rpc.GetPostsByPostIdsResponse.posts:type_name -> rpc.Post
 	0,  // 6: rpc.GetPostsByUserIdResponse.posts:type_name -> rpc.Post
-	30, // 7: rpc.AddPostRequest.location:type_name -> rpc.Location
+	26, // 7: rpc.AddPostRequest.location:type_name -> rpc.Location
 	0,  // 8: rpc.GetLikesResponse.posts:type_name -> rpc.Post
 	0,  // 9: rpc.GetBookmarksResponse.posts:type_name -> rpc.Post
 	10, // [10:10] is the sub-list for method output_type
@@ -2321,54 +2051,6 @@ func file_post_proto_init() {
 				return nil
 			}
 		}
-		file_post_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddCommentRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_post_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddCommentResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_post_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RemoveCommentRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_post_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RemoveCommentResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2376,7 +2058,7 @@ func file_post_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_post_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   29,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

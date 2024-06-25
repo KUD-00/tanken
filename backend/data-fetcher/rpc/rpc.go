@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"tanken/backend/common/cache"
-	database "tanken/backend/common/db"
+	postgres "tanken/backend/common/db/postgres"
 	types "tanken/backend/common/types"
 	commonUtils "tanken/backend/common/utils"
 	"tanken/backend/data-fetcher/rpc/connectrpc/pbconnect"
@@ -26,7 +26,7 @@ import (
 )
 
 type server struct {
-	db         *database.PostgresDatabaseService
+	db         *postgres.PostgresDatabaseService
 	postCache  *cache.PostRedisCacheService
 	geoCache   *cache.GeoRedisCacheService
 	userCache  *cache.UserRedisCacheService
@@ -197,8 +197,24 @@ func (s *server) RemoveLike(ctx context.Context, req *connect.Request[pb.RemoveL
 
 // Integrated tested
 func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error) {
-	err := cacheNewComment(ctx, req.Msg.PostId, req.Msg.Content, req.Msg.UserId, s.postCache, s.db)
+	commentID, err := generateUniqueCommentID(ctx, req.Msg.PostId, s.postCache, s.db)
 
+	if err != nil {
+		return connect.NewResponse(&pb.AddCommentResponse{Ok: 0, Msg: "err generating unique comment ID" + err.Error()}), nil
+	}
+
+	comment := types.Comment{
+		CommentId: commentID,
+		PostId:    req.Msg.PostId,
+		UserId:    req.Msg.UserId,
+		Content:   req.Msg.Content,
+		CreatedAt: time.Now().Unix(),
+		UpdatedAt: time.Now().Unix(),
+		Likes:     0,
+		Status:    int64(1),
+	}
+
+	err = s.postCache.SetComment(ctx, commentID, &comment)
 	if err != nil {
 		return connect.NewResponse(&pb.AddCommentResponse{Ok: 0, Msg: err.Error()}), nil
 	}
@@ -207,8 +223,19 @@ func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddComm
 }
 
 func (s *server) RemoveComment(ctx context.Context, req *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error) {
-
 	return connect.NewResponse(&pb.RemoveCommentResponse{}), nil
+}
+
+func (s *server) ModifyComment(ctx context.Context, req *connect.Request[pb.ModifyCommentRequest]) (*connect.Response[pb.ModifyCommentResponse], error) {
+	return connect.NewResponse(&pb.ModifyCommentResponse{}), nil
+}
+
+func (s *server) GetCommentsByCommentIds(ctx context.Context, req *connect.Request[pb.GetCommentsByCommentIdsRequest]) (*connect.Response[pb.GetCommentsByCommentIdsResponse], error) {
+	return connect.NewResponse(&pb.GetCommentsByCommentIdsResponse{}), nil
+}
+
+func (s *server) GetCommentsByPostId(ctx context.Context, req *connect.Request[pb.GetCommentsByPostIdRequest]) (*connect.Response[pb.GetCommentsByPostIdResponse], error) {
+	return connect.NewResponse(&pb.GetCommentsByPostIdResponse{}), nil
 }
 
 func (s *server) AddBookmark(ctx context.Context, req *connect.Request[pb.AddBookmarkRequest]) (*connect.Response[pb.AddBookmarkResponse], error) {
@@ -351,7 +378,7 @@ func StartServer(geoCache *redis.Client, postCache *redis.Client, userCache *red
 		geoCache:   cache.NewGeoRedisCacheService(geoCache),
 		postCache:  cache.NewPostRedisCacheService(postCache),
 		userCache:  cache.NewUserRedisCacheService(userCache),
-		db:         database.NewPostgresDatabaseService(db),
+		db:         postgres.NewPostgresDatabaseService(db),
 		uploaderS3: uploaderS3,
 	}
 

@@ -5,7 +5,8 @@
 
 import { TestConnectionRequest, TestConnectionResponse } from "./data-fetcher-service_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import { AddBookmarkRequest, AddBookmarkResponse, AddCommentRequest, AddCommentResponse, AddLikeRequest, AddLikeResponse, AddPostRequest, AddPostResponse, GetPostsByLocationRequest, GetPostsByLocationResponse, GetPostsByPostIdsRequest, GetPostsByPostIdsResponse, GetPostsByUserIdRequest, GetPostsByUserIdResponse, HardDeletePostRequest, HardDeletePostResponse, RemoveBookmarkRequest, RemoveBookmarkResponse, RemoveCommentRequest, RemoveCommentResponse, RemoveLikeRequest, RemoveLikeResponse, SoftDeletePostRequest, SoftDeletePostResponse } from "./post_pb.js";
+import { AddBookmarkRequest, AddBookmarkResponse, AddLikeRequest, AddLikeResponse, AddPostRequest, AddPostResponse, GetPostsByLocationRequest, GetPostsByLocationResponse, GetPostsByPostIdsRequest, GetPostsByPostIdsResponse, GetPostsByUserIdRequest, GetPostsByUserIdResponse, HardDeletePostRequest, HardDeletePostResponse, RemoveBookmarkRequest, RemoveBookmarkResponse, RemoveLikeRequest, RemoveLikeResponse, SoftDeletePostRequest, SoftDeletePostResponse } from "./post_pb.js";
+import { AddCommentRequest, AddCommentResponse, GetCommentsByCommentIdsRequest, GetCommentsByCommentIdsResponse, GetCommentsByPostIdRequest, GetCommentsByPostIdResponse, ModifyCommentRequest, ModifyCommentResponse, RemoveCommentRequest, RemoveCommentResponse } from "./comment_pb.js";
 import { GetUserInfoByOAuthRequest, GetUserInfoByOAuthResponse, GetUserInfoRequest, GetUserInfoResponse, HardDeleteUserRequest, HardDeleteUserResponse, SignUpUserRequest, SignUpUserResponse, SoftDeleteUserRequest, SoftDeleteUserResponse, UpdateUserRequest, UpdateUserResponse } from "./user_pb.js";
 
 /**
@@ -129,6 +130,33 @@ export const DataFetcherService = {
       name: "RemoveComment",
       I: RemoveCommentRequest,
       O: RemoveCommentResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.ModifyComment
+     */
+    modifyComment: {
+      name: "ModifyComment",
+      I: ModifyCommentRequest,
+      O: ModifyCommentResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.GetCommentsByCommentIds
+     */
+    getCommentsByCommentIds: {
+      name: "GetCommentsByCommentIds",
+      I: GetCommentsByCommentIdsRequest,
+      O: GetCommentsByCommentIdsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.GetCommentsByPostId
+     */
+    getCommentsByPostId: {
+      name: "GetCommentsByPostId",
+      I: GetCommentsByPostIdRequest,
+      O: GetCommentsByPostIdResponse,
       kind: MethodKind.Unary,
     },
     /**

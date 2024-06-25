@@ -3,9 +3,6 @@ package rpc
 import (
 	"context"
 	"fmt"
-	"time"
-
-	types "tanken/backend/common/types"
 
 	"tanken/backend/common/cache"
 	database "tanken/backend/common/db"
@@ -59,25 +56,4 @@ func generateUniqueCommentID(ctx context.Context, postID string, pc cache.PostCa
 			return id, nil
 		}
 	}
-}
-
-func cacheNewComment(ctx context.Context, postID string, content string, userId string, pc cache.PostCacheService, db database.DatabaseService) error {
-	commentID, err := generateUniqueCommentID(ctx, postID, pc, db)
-
-	if err != nil {
-		return fmt.Errorf("error generating unique comment ID: %v", err)
-	}
-
-	comment := types.Comment{
-		CommentId: commentID,
-		PostId:    postID,
-		UserId:    userId,
-		Content:   content,
-		CreatedAt: time.Now().Unix(),
-		UpdatedAt: time.Now().Unix(),
-		Likes:     0,
-		Status:    int64(1),
-	}
-
-	return pc.SetComment(ctx, commentID, &comment)
 }
