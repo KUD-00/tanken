@@ -161,8 +161,8 @@ func removePostFromDB(ctx context.Context, postId string, postgres *sql.DB) erro
 }
 
 // Others
-func getPostGeoData(ctx context.Context, postID string, gc cache.GeoCacheService) (types.Location, error) {
-	geoPos, err := gc.GetGeoLocation(ctx, postID)
+func getPostGeoData(ctx context.Context, postId string, gc cache.GeoCacheService) (types.Location, error) {
+	geoPos, err := gc.GetGeoLocation(ctx, postId)
 	if err != nil {
 		return types.Location{}, fmt.Errorf("error retrieving geo data from Redis: %v", err)
 	}
@@ -233,14 +233,14 @@ func decrementLikes(ctx context.Context, postId string, userId string, rs cache.
 	return nil
 }
 
-func registerPostToGeoRedis(ctx context.Context, postID string, longitude, latitude float64, rs *cache.GeoRedisCacheService) error {
+func registerPostToGeoRedis(ctx context.Context, postId string, longitude, latitude float64, rs *cache.GeoRedisCacheService) error {
 	geoLocation := &redis.GeoLocation{
-		Name:      postID,
+		Name:      postId,
 		Longitude: float64(longitude),
 		Latitude:  float64(latitude),
 	}
 
-	err := rs.AddGeoLocation(ctx, geoLocation, postID)
+	err := rs.AddGeoLocation(ctx, geoLocation, postId)
 
 	if err != nil {
 		return fmt.Errorf("error registering post to geo-redis: %v", err)
@@ -249,8 +249,8 @@ func registerPostToGeoRedis(ctx context.Context, postID string, longitude, latit
 	return nil
 }
 
-func removePostIDinGeoRedis(ctx context.Context, postID string, rs *cache.GeoRedisCacheService) error {
-	if err := rs.RemoveGeoLocation(ctx, postID); err != nil {
+func removePostIDinGeoRedis(ctx context.Context, postId string, rs *cache.GeoRedisCacheService) error {
+	if err := rs.RemoveGeoLocation(ctx, postId); err != nil {
 		fmt.Errorf("error removing geo data: %v", err)
 		return err
 	}

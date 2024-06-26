@@ -22,13 +22,13 @@ func createIDMap(slice []string) map[string]struct{} {
 	return m
 }
 
-func generateUniqueCommentID(ctx context.Context, postID string, pc cache.PostCacheService, db database.DatabaseService) (string, error) {
-	exist, err := pc.IsKeyExist(ctx, "post:"+postID)
+func generateUniqueCommentID(ctx context.Context, postId string, pc cache.PostCacheService, db database.DatabaseService) (string, error) {
+	exist, err := pc.IsKeyExist(ctx, "post:"+postId)
 
 	if exist && err == nil {
 		for {
-			id := postID + uuid.NewString()
-			existIds, err := db.GetPostCommentIds(ctx, postID)
+			id := postId + uuid.NewString()
+			existIds, err := db.GetPostCommentIds(ctx, postId)
 
 			if err != nil {
 				return "", fmt.Errorf("error getting db post comment IDs: %v", err)
@@ -42,7 +42,7 @@ func generateUniqueCommentID(ctx context.Context, postID string, pc cache.PostCa
 		}
 	}
 
-	existIds, err := db.GetPostCommentIds(ctx, postID)
+	existIds, err := db.GetPostCommentIds(ctx, postId)
 	existIdMap := createIDMap(existIds)
 
 	if err != nil {
@@ -50,7 +50,7 @@ func generateUniqueCommentID(ctx context.Context, postID string, pc cache.PostCa
 	}
 
 	for {
-		id := postID + uuid.NewString()[:8]
+		id := postId + uuid.NewString()[:8]
 
 		if _, exists := existIdMap[id]; !exists {
 			return id, nil

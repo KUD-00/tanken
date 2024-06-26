@@ -73,19 +73,47 @@ func (r *PostRedisCacheService) GetPost(ctx context.Context, postId string) (*ty
 	}, nil
 }
 
-func (r *PostRedisCacheService) GetPostDetailsCmd(ctx context.Context, postID string) (*redis.MapStringStringCmd, error) {
+func (r *PostRedisCacheService) RemovePost(ctx context.Context, postId string) error {
+	pipe := r.GetPipe(ctx)
+
+	if pipe == nil {
+		ctx, pipe = r.NewPipe(ctx)
+		r.RemovePostDetails(ctx, postId)
+		r.RemovePostTags(ctx, postId, nil)
+		r.RemovePostPictureLinks(ctx, postId, nil)
+		r.RemoveComments(ctx, nil)
+		r.RemovePostCommentIds(ctx, postId, nil)
+		r.RemovePostLikedBy(ctx, postId, nil)
+
+		_, err := pipe.Exec(ctx)
+		if err != nil {
+			return fmt.Errorf("error removing post from cache: %v", err)
+		}
+	} else {
+		r.RemovePostDetails(ctx, postId)
+		r.RemovePostTags(ctx, postId, nil)
+		r.RemovePostPictureLinks(ctx, postId, nil)
+		r.RemoveComments(ctx, nil)
+		r.RemovePostCommentIds(ctx, postId, nil)
+		r.RemovePostLikedBy(ctx, postId, nil)
+	}
+
+	return nil
+}
+
+func (r *PostRedisCacheService) GetPostDetailsCmd(ctx context.Context, postId string) (*redis.MapStringStringCmd, error) {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
 		return nil, fmt.Errorf("error getting post details: pipeliner not found")
 	}
 
-	cmd := pipe.HGetAll(ctx, utils.PostPrefix+postID)
+	cmd := pipe.HGetAll(ctx, utils.PostPrefix+postId)
 	return cmd, nil
 }
 
-func (r *PostRedisCacheService) GetPostDetails(ctx context.Context, postID string) (*types.PostDetailsPtr, error) {
-	result, err := r.client.HGetAll(ctx, postID).Result()
+func (r *PostRedisCacheService) GetPostDetails(ctx context.Context, postId string) (*types.PostDetailsPtr, error) {
+	result, err := r.client.HGetAll(ctx, postId).Result()
 	if err != nil {
 		return nil, fmt.Errorf("error getting post details: %v", err)
 	}
@@ -93,35 +121,50 @@ func (r *PostRedisCacheService) GetPostDetails(ctx context.Context, postID strin
 	return PostDetailsMapToPostDetailsPtr(result), nil
 }
 
-func (r *PostRedisCacheService) SetPostDetails(ctx context.Context, postID string, postDetails *types.PostDetailsPtr) error {
+func (r *PostRedisCacheService) SetPostDetails(ctx context.Context, postId string, postDetails *types.PostDetailsPtr) error {
 	postDetailsMap := generatePostDetailsMap(postDetails)
 
 	pipe := r.GetPipe(ctx)
 	if pipe == nil {
-		err := r.client.HSet(ctx, utils.PostPrefix+postID, postDetailsMap).Err()
+		err := r.client.HSet(ctx, utils.PostPrefix+postId, postDetailsMap).Err()
 
 		if err != nil {
 			return fmt.Errorf("error setting post details: %v", err)
 		}
 	} else {
-		pipe.HSet(ctx, utils.PostPrefix+postID, postDetailsMap)
+		pipe.HSet(ctx, utils.PostPrefix+postId, postDetailsMap)
 	}
 
 	return nil
 }
 
-func (r *PostRedisCacheService) GetPostLikedByCmd(ctx context.Context, postID string) (*redis.StringSliceCmd, error) {
+func (r *PostRedisCacheService) RemovePostDetails(ctx context.Context, postId string) error {
+	pipe := r.GetPipe(ctx)
+
+	if pipe == nil {
+		err := r.client.Del(ctx, utils.PostPrefix+postId).Err()
+		if err != nil {
+			return fmt.Errorf("error removing post details: %v", err)
+		}
+	} else {
+		pipe.Del(ctx, utils.PostPrefix+postId)
+	}
+
+	return nil
+}
+
+func (r *PostRedisCacheService) GetPostLikedByCmd(ctx context.Context, postId string) (*redis.StringSliceCmd, error) {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
 		return nil, fmt.Errorf("error getting post likedBy: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.LikedBySuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postId+utils.LikedBySuffix), nil
 }
 
-func (r *PostRedisCacheService) GetPostLikedBy(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.LikedBySuffix).Result()
+func (r *PostRedisCacheService) GetPostLikedBy(ctx context.Context, postId string) ([]string, error) {
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postId+utils.LikedBySuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post likedBy: %v", err)
@@ -130,56 +173,56 @@ func (r *PostRedisCacheService) GetPostLikedBy(ctx context.Context, postID strin
 	return result, nil
 }
 
-func (r *PostRedisCacheService) AddPostLikedBy(ctx context.Context, postID string, userIDs []string) error {
+func (r *PostRedisCacheService) AddPostLikedBy(ctx context.Context, postId string, userIds []string) error {
 	pipe := r.GetPipe(ctx)
 
-	args := make([]interface{}, len(userIDs))
-	for i, v := range userIDs {
+	args := make([]interface{}, len(userIds))
+	for i, v := range userIds {
 		args[i] = v
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postId+utils.LikedBySuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post likedBy: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...)
+		pipe.SAdd(ctx, utils.PostPrefix+postId+utils.LikedBySuffix, args...)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) RemovePostLikedBy(ctx context.Context, postID string, userIDs []string) error {
+func (r *PostRedisCacheService) RemovePostLikedBy(ctx context.Context, postId string, userIds []string) error {
 	pipe := r.GetPipe(ctx)
 
-	args := make([]interface{}, len(userIDs))
-	for i, v := range userIDs {
+	args := make([]interface{}, len(userIds))
+	for i, v := range userIds {
 		args[i] = v
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postId+utils.LikedBySuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post likedBy: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, utils.PostPrefix+postID+utils.LikedBySuffix, args...)
+		pipe.SRem(ctx, utils.PostPrefix+postId+utils.LikedBySuffix, args...)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) GetPostTagsCmd(ctx context.Context, postID string) (*redis.StringSliceCmd, error) {
+func (r *PostRedisCacheService) GetPostTagsCmd(ctx context.Context, postId string) (*redis.StringSliceCmd, error) {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
 		return nil, fmt.Errorf("error getting post tags: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.TagsSuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postId+utils.TagsSuffix), nil
 }
 
-func (r *PostRedisCacheService) GetPostTags(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.TagsSuffix).Result()
+func (r *PostRedisCacheService) GetPostTags(ctx context.Context, postId string) ([]string, error) {
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postId+utils.TagsSuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post tags: %v", err)
@@ -188,7 +231,7 @@ func (r *PostRedisCacheService) GetPostTags(ctx context.Context, postID string) 
 	return result, nil
 }
 
-func (r *PostRedisCacheService) AddPostTags(ctx context.Context, postID string, tags []string) error {
+func (r *PostRedisCacheService) AddPostTags(ctx context.Context, postId string, tags []string) error {
 	pipe := r.GetPipe(ctx)
 
 	args := make([]interface{}, len(tags))
@@ -197,17 +240,17 @@ func (r *PostRedisCacheService) AddPostTags(ctx context.Context, postID string, 
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postId+utils.TagsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post tags: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...)
+		pipe.SAdd(ctx, utils.PostPrefix+postId+utils.TagsSuffix, args...)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) RemovePostTags(ctx context.Context, postID string, tags []string) error {
+func (r *PostRedisCacheService) RemovePostTags(ctx context.Context, postId string, tags []string) error {
 	pipe := r.GetPipe(ctx)
 
 	args := make([]interface{}, len(tags))
@@ -216,28 +259,28 @@ func (r *PostRedisCacheService) RemovePostTags(ctx context.Context, postID strin
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postId+utils.TagsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post tags: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, utils.PostPrefix+postID+utils.TagsSuffix, args...)
+		pipe.SRem(ctx, utils.PostPrefix+postId+utils.TagsSuffix, args...)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) GetPostPictureLinksCmd(ctx context.Context, postID string) (*redis.StringSliceCmd, error) {
+func (r *PostRedisCacheService) GetPostPictureLinksCmd(ctx context.Context, postId string) (*redis.StringSliceCmd, error) {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
 		return nil, fmt.Errorf("error getting post pictureLinks: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postId+utils.PictureLinksSuffix), nil
 }
 
-func (r *PostRedisCacheService) GetPostPictureLinks(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix).Result()
+func (r *PostRedisCacheService) GetPostPictureLinks(ctx context.Context, postId string) ([]string, error) {
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postId+utils.PictureLinksSuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post pictureLinks: %v", err)
@@ -246,7 +289,7 @@ func (r *PostRedisCacheService) GetPostPictureLinks(ctx context.Context, postID 
 	return result, nil
 }
 
-func (r *PostRedisCacheService) AddPostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error {
+func (r *PostRedisCacheService) AddPostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error {
 	if len(pictureLinks) == 0 {
 		return nil
 	}
@@ -259,17 +302,17 @@ func (r *PostRedisCacheService) AddPostPictureLinks(ctx context.Context, postID 
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postId+utils.PictureLinksSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post pictureLinks: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...)
+		pipe.SAdd(ctx, utils.PostPrefix+postId+utils.PictureLinksSuffix, args...)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) RemovePostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error {
+func (r *PostRedisCacheService) RemovePostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error {
 	pipe := r.GetPipe(ctx)
 
 	args := make([]interface{}, len(pictureLinks))
@@ -278,28 +321,28 @@ func (r *PostRedisCacheService) RemovePostPictureLinks(ctx context.Context, post
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postId+utils.PictureLinksSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post pictureLinks: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, utils.PostPrefix+postID+utils.PictureLinksSuffix, args...)
+		pipe.SRem(ctx, utils.PostPrefix+postId+utils.PictureLinksSuffix, args...)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) GetPostCommentIdsCmd(ctx context.Context, postID string) (*redis.StringSliceCmd, error) {
+func (r *PostRedisCacheService) GetPostCommentIdsCmd(ctx context.Context, postId string) (*redis.StringSliceCmd, error) {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
 		return nil, fmt.Errorf("error getting post commentIds: pipeliner not found")
 	}
 
-	return pipe.SMembers(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix), nil
+	return pipe.SMembers(ctx, utils.PostPrefix+postId+utils.CommentIdsSuffix), nil
 }
 
-func (r *PostRedisCacheService) GetPostCommentIds(ctx context.Context, postID string) ([]string, error) {
-	result, err := r.client.SMembers(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix).Result()
+func (r *PostRedisCacheService) GetPostCommentIds(ctx context.Context, postId string) ([]string, error) {
+	result, err := r.client.SMembers(ctx, utils.PostPrefix+postId+utils.CommentIdsSuffix).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting post commentIds: %v", err)
@@ -308,7 +351,7 @@ func (r *PostRedisCacheService) GetPostCommentIds(ctx context.Context, postID st
 	return result, nil
 }
 
-func (r *PostRedisCacheService) AddPostCommentIds(ctx context.Context, postID string, commentIds []string) error {
+func (r *PostRedisCacheService) AddPostCommentIds(ctx context.Context, postId string, commentIds []string) error {
 	pipe := r.GetPipe(ctx)
 
 	args := make([]interface{}, len(commentIds))
@@ -317,17 +360,17 @@ func (r *PostRedisCacheService) AddPostCommentIds(ctx context.Context, postID st
 	}
 
 	if pipe == nil {
-		err := r.client.SAdd(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, args...).Err()
+		err := r.client.SAdd(ctx, utils.PostPrefix+postId+utils.CommentIdsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post commentIds: %v", err)
 		}
 	} else {
-		pipe.SAdd(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, commentIds)
+		pipe.SAdd(ctx, utils.PostPrefix+postId+utils.CommentIdsSuffix, commentIds)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) RemovePostCommentIds(ctx context.Context, postID string, commentIds []string) error {
+func (r *PostRedisCacheService) RemovePostCommentIds(ctx context.Context, postId string, commentIds []string) error {
 	pipe := r.GetPipe(ctx)
 
 	args := make([]interface{}, len(commentIds))
@@ -336,28 +379,55 @@ func (r *PostRedisCacheService) RemovePostCommentIds(ctx context.Context, postID
 	}
 
 	if pipe == nil {
-		err := r.client.SRem(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, args...).Err()
+		err := r.client.SRem(ctx, utils.PostPrefix+postId+utils.CommentIdsSuffix, args...).Err()
 		if err != nil {
 			return fmt.Errorf("error removing post commentIds: %v", err)
 		}
 	} else {
-		pipe.SRem(ctx, utils.PostPrefix+postID+utils.CommentIdsSuffix, commentIds)
+		pipe.SRem(ctx, utils.PostPrefix+postId+utils.CommentIdsSuffix, commentIds)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) GetCommentCmd(ctx context.Context, commentID string) (*redis.MapStringStringCmd, error) {
+// TODO: this is not effective, maybe restructure the comment key, let it contains postId maybe
+func (r *PostRedisCacheService) RemovePostComments(ctx context.Context, postId string) error {
+	commentIds, err := r.GetPostCommentIds(ctx, postId)
+	if err != nil {
+		return fmt.Errorf("error getting commentIds: %v", err)
+	}
+
+	pipe := r.GetPipe(ctx)
+
+	if pipe == nil {
+		ctx, pipe = r.NewPipe(ctx)
+		err = r.RemoveComments(ctx, commentIds)
+		if err != nil {
+			return fmt.Errorf("error removing comments: %v", err)
+		}
+
+		_, err = pipe.Exec(ctx)
+	} else {
+		err = r.RemoveComments(ctx, commentIds)
+		if err != nil {
+			return fmt.Errorf("error removing comments: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (r *PostRedisCacheService) GetCommentCmd(ctx context.Context, commentId string) (*redis.MapStringStringCmd, error) {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
 		return nil, fmt.Errorf("error getting comment: pipeliner not found")
 	}
 
-	return pipe.HGetAll(ctx, utils.CommentPrefix+commentID), nil
+	return pipe.HGetAll(ctx, utils.CommentPrefix+commentId), nil
 }
 
-func (r *PostRedisCacheService) GetComment(ctx context.Context, commentID string) (*types.Comment, error) {
-	result, err := r.client.HGetAll(ctx, utils.CommentPrefix+commentID).Result()
+func (r *PostRedisCacheService) GetComment(ctx context.Context, commentId string) (*types.Comment, error) {
+	result, err := r.client.HGetAll(ctx, utils.CommentPrefix+commentId).Result()
 	if err != nil {
 		return nil, fmt.Errorf("error getting comment: %v", err)
 	}
@@ -365,7 +435,7 @@ func (r *PostRedisCacheService) GetComment(ctx context.Context, commentID string
 	return CommentMapToComment(result), nil
 }
 
-func (r *PostRedisCacheService) SetComment(ctx context.Context, commentID string, comment *types.Comment) error {
+func (r *PostRedisCacheService) SetComment(ctx context.Context, commentId string, comment *types.Comment) error {
 	commentMap := map[string]interface{}{
 		"createdAt": comment.CreatedAt,
 		"updatedAt": comment.UpdatedAt,
@@ -377,32 +447,36 @@ func (r *PostRedisCacheService) SetComment(ctx context.Context, commentID string
 
 	pipe := r.GetPipe(ctx)
 	if pipe == nil {
-		err := r.client.HSet(ctx, utils.CommentPrefix+commentID, commentMap).Err()
+		err := r.client.HSet(ctx, utils.CommentPrefix+commentId, commentMap).Err()
 		if err != nil {
 			return fmt.Errorf("error setting comment: %v", err)
 		}
 	} else {
-		pipe.HSet(ctx, utils.CommentPrefix+commentID, commentMap)
+		pipe.HSet(ctx, utils.CommentPrefix+commentId, commentMap)
 	}
 
 	return nil
 }
 
-func (r *PostRedisCacheService) RemoveComment(ctx context.Context, commentID string) error {
+func (r *PostRedisCacheService) RemoveComments(ctx context.Context, commentIds []string) error {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
-		err := r.client.Del(ctx, utils.CommentPrefix+commentID).Err()
-		if err != nil {
-			return fmt.Errorf("error removing comment: %v", err)
+		for _, commentId := range commentIds {
+			err := r.client.Del(ctx, utils.CommentPrefix+commentId).Err()
+			if err != nil {
+				return fmt.Errorf("error removing comment: %v", err)
+			}
 		}
 	} else {
-		pipe.Del(ctx, utils.CommentPrefix+commentID)
+		for _, commentId := range commentIds {
+			pipe.Del(ctx, utils.CommentPrefix+commentId)
+		}
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) SetUser(ctx context.Context, userID string, user *types.User) error {
+func (r *PostRedisCacheService) SetUser(ctx context.Context, userId string, user *types.User) error {
 	userMap := map[string]interface{}{
 		"userId":             user.UserId,
 		"username":           user.Username,
@@ -413,29 +487,29 @@ func (r *PostRedisCacheService) SetUser(ctx context.Context, userID string, user
 
 	pipe := r.GetPipe(ctx)
 	if pipe == nil {
-		err := r.client.HSet(ctx, utils.UserPrefix+userID, userMap).Err()
+		err := r.client.HSet(ctx, utils.UserPrefix+userId, userMap).Err()
 		if err != nil {
 			return fmt.Errorf("error setting user: %v", err)
 		}
 	} else {
-		pipe.HSet(ctx, utils.UserPrefix+userID, userMap)
+		pipe.HSet(ctx, utils.UserPrefix+userId, userMap)
 	}
 
 	return nil
 }
 
-func (r *PostRedisCacheService) GetUserCmd(ctx context.Context, userID string) (*redis.MapStringStringCmd, error) {
+func (r *PostRedisCacheService) GetUserCmd(ctx context.Context, userId string) (*redis.MapStringStringCmd, error) {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
 		return nil, fmt.Errorf("error getting user: pipeliner not found")
 	}
 
-	return pipe.HGetAll(ctx, utils.UserPrefix+userID), nil
+	return pipe.HGetAll(ctx, utils.UserPrefix+userId), nil
 }
 
-func (r *PostRedisCacheService) GetUser(ctx context.Context, userID string) (*types.User, error) {
-	result, err := r.client.HGetAll(ctx, utils.UserPrefix+userID).Result()
+func (r *PostRedisCacheService) GetUser(ctx context.Context, userId string) (*types.User, error) {
+	result, err := r.client.HGetAll(ctx, utils.UserPrefix+userId).Result()
 	if err != nil {
 		return nil, fmt.Errorf("error getting user: %v", err)
 	}
@@ -443,30 +517,30 @@ func (r *PostRedisCacheService) GetUser(ctx context.Context, userID string) (*ty
 	return UserMapToUser(result), nil
 }
 
-func (r *PostRedisCacheService) RemoveUser(ctx context.Context, userID string) error {
+func (r *PostRedisCacheService) RemoveUser(ctx context.Context, userId string) error {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
-		err := r.client.Del(ctx, utils.UserPrefix+userID).Err()
+		err := r.client.Del(ctx, utils.UserPrefix+userId).Err()
 		if err != nil {
 			return fmt.Errorf("error removing user: %v", err)
 		}
 	} else {
-		pipe.Del(ctx, utils.UserPrefix+userID)
+		pipe.Del(ctx, utils.UserPrefix+userId)
 	}
 	return nil
 }
 
-func (r *PostRedisCacheService) AddPostCacheScore(ctx context.Context, postID string, score int64) error {
+func (r *PostRedisCacheService) AddPostCacheScore(ctx context.Context, postId string, score int64) error {
 	pipe := r.GetPipe(ctx)
 
 	if pipe == nil {
-		err := r.client.HSet(ctx, utils.PostCacheKeys.CacheScore, postID, score).Err()
+		err := r.client.HSet(ctx, utils.PostCacheKeys.CacheScore, postId, score).Err()
 		if err != nil {
 			return fmt.Errorf("error adding post cache score: %v", err)
 		}
 	} else {
-		pipe.HSet(ctx, utils.PostCacheKeys.CacheScore, postID, score)
+		pipe.HSet(ctx, utils.PostCacheKeys.CacheScore, postId, score)
 	}
 	return nil
 }

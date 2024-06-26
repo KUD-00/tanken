@@ -18,7 +18,7 @@ func NewPostgresDatabaseService(db *sql.DB) *PostgresDatabaseService {
 	return &PostgresDatabaseService{db: db}
 }
 
-func (p *PostgresDatabaseService) GetPost(ctx context.Context, postID string) (*types.Post, error) {
+func (p *PostgresDatabaseService) GetPost(ctx context.Context, postId string) (*types.Post, error) {
 	query := `
         SELECT 
             p.post_id, p.user_id, p.content, p.created_at, p.updated_at, p.likes, p.latitude, p.longitude, p.status,
@@ -32,7 +32,7 @@ func (p *PostgresDatabaseService) GetPost(ctx context.Context, postID string) (*
         WHERE p.post_id = $1
     `
 
-	rows, err := p.db.QueryContext(ctx, query, postID)
+	rows, err := p.db.QueryContext(ctx, query, postId)
 	if err != nil {
 		return nil, err
 	}
@@ -98,18 +98,32 @@ func (p *PostgresDatabaseService) GetPost(ctx context.Context, postID string) (*
 	return &post, nil
 }
 
-func (p *PostgresDatabaseService) SetPost(ctx context.Context, postID string, post *types.Post) error {
+func (p *PostgresDatabaseService) SetPost(ctx context.Context, postId string, post *types.Post) error {
 	return nil
 }
 
-func (p *PostgresDatabaseService) DeletePost(ctx context.Context, postID string) error {
+func (p *PostgresDatabaseService) SoftDeletePost(ctx context.Context, postId string) error {
+	_, err := p.db.ExecContext(ctx, "UPDATE posts SET status = 0 WHERE user_id = $1", postId)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (p *PostgresDatabaseService) GetPostDetails(ctx context.Context, postID string) (*types.PostDetails, error) {
+func (p *PostgresDatabaseService) HardDeletePost(ctx context.Context, postId string) error {
+	_, err := p.db.ExecContext(ctx, "DELETE FROM posts WHERE user_id = $1", postId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *PostgresDatabaseService) GetPostDetails(ctx context.Context, postId string) (*types.PostDetails, error) {
 	var post types.PostDetails
 
-	err := p.db.QueryRowContext(ctx, "SELECT post_id, user_id, content, created_at, updated_at, likes, latitude, longitude, status, FROM posts WHERE post_id = $1", postID).Scan(
+	err := p.db.QueryRowContext(ctx, "SELECT post_id, user_id, content, created_at, updated_at, likes, latitude, longitude, status, FROM posts WHERE post_id = $1", postId).Scan(
 		&post.PostId,
 		&post.UserId,
 		&post.Content,
@@ -127,8 +141,8 @@ func (p *PostgresDatabaseService) GetPostDetails(ctx context.Context, postID str
 	return &post, nil
 }
 
-func (p *PostgresDatabaseService) GetPostsDetails(ctx context.Context, postIDs []string) (*[]types.PostDetails, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT post_id, user_id, content, created_at, updated_at, likes, latitude, longitude, status FROM posts WHERE post_id = ANY($1)", pq.Array(postIDs))
+func (p *PostgresDatabaseService) GetPostsDetails(ctx context.Context, postIds []string) (*[]types.PostDetails, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT post_id, user_id, content, created_at, updated_at, likes, latitude, longitude, status FROM posts WHERE post_id = ANY($1)", pq.Array(postIds))
 	if err != nil {
 		return nil, err
 	}
@@ -156,9 +170,9 @@ func (p *PostgresDatabaseService) GetPostsDetails(ctx context.Context, postIDs [
 	return &posts, nil
 }
 
-func (p *PostgresDatabaseService) SetPostDetails(ctx context.Context, postID string, post *types.PostDetails) error {
+func (p *PostgresDatabaseService) SetPostDetails(ctx context.Context, postId string, post *types.PostDetails) error {
 	_, err := p.db.ExecContext(ctx, "INSERT INTO posts (post_id, user_id, content, created_at, updated_at, likes, latitude, longitude, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (post_id) DO UPDATE SET content = EXCLUDED.content, updated_at = EXCLUDED.updated_at, likes = EXCLUDED.likes, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, status = EXCLUDED.status",
-		postID,
+		postId,
 		post.UserId,
 		post.Content,
 		post.CreatedAt,
@@ -194,8 +208,8 @@ func (p *PostgresDatabaseService) SetPostsDetails(ctx context.Context, posts []t
 	return nil
 }
 
-func (p *PostgresDatabaseService) GetPostLikedBy(ctx context.Context, postID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT user_id FROM user_liked_posts WHERE post_id = $1", postID)
+func (p *PostgresDatabaseService) GetPostLikedBy(ctx context.Context, postId string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT user_id FROM user_liked_posts WHERE post_id = $1", postId)
 	if err != nil {
 		return nil, err
 	}
@@ -213,18 +227,18 @@ func (p *PostgresDatabaseService) GetPostLikedBy(ctx context.Context, postID str
 	return users, nil
 }
 
-func (p *PostgresDatabaseService) AddPostLikedBy(ctx context.Context, postID string, userIDs []string) error {
-	if len(userIDs) == 0 {
+func (p *PostgresDatabaseService) AddPostLikedBy(ctx context.Context, postId string, userIds []string) error {
+	if len(userIds) == 0 {
 		return nil
 	}
 
 	query := "INSERT INTO user_liked_posts (post_id, user_id) VALUES "
-	values := []interface{}{postID}
+	values := []interface{}{postId}
 	valueStrings := []string{}
 
-	for i, userID := range userIDs {
+	for i, userId := range userIds {
 		valueStrings = append(valueStrings, fmt.Sprintf("($1, $%d)", i+2))
-		values = append(values, userID)
+		values = append(values, userId)
 	}
 
 	query += strings.Join(valueStrings, ", ") + " ON CONFLICT DO NOTHING"
@@ -237,13 +251,13 @@ func (p *PostgresDatabaseService) AddPostLikedBy(ctx context.Context, postID str
 	return nil
 }
 
-func (p *PostgresDatabaseService) DeletePostLikedBy(ctx context.Context, postID string, userIDs []string) error {
-	if len(userIDs) == 0 {
+func (p *PostgresDatabaseService) DeletePostLikedBy(ctx context.Context, postId string, userIds []string) error {
+	if len(userIds) == 0 {
 		return nil
 	}
 
 	query := "DELETE FROM user_liked_posts WHERE post_id = $1 AND user_id = ANY($2)"
-	_, err := p.db.ExecContext(ctx, query, postID, pq.Array(userIDs))
+	_, err := p.db.ExecContext(ctx, query, postId, pq.Array(userIds))
 	if err != nil {
 		return err
 	}
@@ -251,8 +265,8 @@ func (p *PostgresDatabaseService) DeletePostLikedBy(ctx context.Context, postID 
 	return nil
 }
 
-func (p *PostgresDatabaseService) GetPostTags(ctx context.Context, postID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT tag FROM post_tags WHERE post_id = $1", postID)
+func (p *PostgresDatabaseService) GetPostTags(ctx context.Context, postId string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT tag FROM post_tags WHERE post_id = $1", postId)
 	if err != nil {
 		return nil, err
 	}
@@ -270,12 +284,12 @@ func (p *PostgresDatabaseService) GetPostTags(ctx context.Context, postID string
 	return tags, nil
 }
 
-func (p *PostgresDatabaseService) AddPostTags(ctx context.Context, postID string, tags []string) error {
+func (p *PostgresDatabaseService) AddPostTags(ctx context.Context, postId string, tags []string) error {
 	if len(tags) == 0 {
 		return nil
 	}
 	query := "INSERT INTO post_tags (post_id, tag) VALUES "
-	values := []interface{}{postID}
+	values := []interface{}{postId}
 	valueStrings := []string{}
 
 	for i, tag := range tags {
@@ -294,9 +308,9 @@ func (p *PostgresDatabaseService) AddPostTags(ctx context.Context, postID string
 }
 
 // 如果数据库中存在大量的标签，且你担心一次性操作可能会引起事务锁或者其他性能问题，可以将操作批量化，即每次删除固定数量的标签
-func (p *PostgresDatabaseService) DeletePostTags(ctx context.Context, postID string, tags []string) error {
+func (p *PostgresDatabaseService) DeletePostTags(ctx context.Context, postId string, tags []string) error {
 	query := "DELETE FROM post_tags WHERE post_id = $1 AND tag = ANY($2)"
-	_, err := p.db.ExecContext(ctx, query, postID, pq.Array(tags))
+	_, err := p.db.ExecContext(ctx, query, postId, pq.Array(tags))
 	if err != nil {
 		return err
 	}
@@ -304,8 +318,8 @@ func (p *PostgresDatabaseService) DeletePostTags(ctx context.Context, postID str
 	return nil
 }
 
-func (p *PostgresDatabaseService) GetPostPictureLinks(ctx context.Context, postID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT link FROM post_picture_links WHERE post_id = $1", postID)
+func (p *PostgresDatabaseService) GetPostPictureLinks(ctx context.Context, postId string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT link FROM post_picture_links WHERE post_id = $1", postId)
 	if err != nil {
 		return nil, err
 	}
@@ -323,13 +337,13 @@ func (p *PostgresDatabaseService) GetPostPictureLinks(ctx context.Context, postI
 	return links, nil
 }
 
-func (p *PostgresDatabaseService) AddPostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error {
+func (p *PostgresDatabaseService) AddPostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error {
 	if len(pictureLinks) == 0 {
 		return nil
 	}
 
 	query := "INSERT INTO post_picture_links (post_id, link) VALUES "
-	values := []interface{}{postID}
+	values := []interface{}{postId}
 	valueStrings := []string{}
 
 	for i, link := range pictureLinks {
@@ -347,13 +361,13 @@ func (p *PostgresDatabaseService) AddPostPictureLinks(ctx context.Context, postI
 	return nil
 }
 
-func (p *PostgresDatabaseService) DeletePostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error {
+func (p *PostgresDatabaseService) DeletePostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error {
 	if len(pictureLinks) == 0 {
 		return nil
 	}
 
 	query := "DELETE FROM post_picture_links WHERE post_id = $1 AND link = ANY($2)"
-	_, err := p.db.ExecContext(ctx, query, postID, pq.Array(pictureLinks))
+	_, err := p.db.ExecContext(ctx, query, postId, pq.Array(pictureLinks))
 	if err != nil {
 		return err
 	}
@@ -362,8 +376,8 @@ func (p *PostgresDatabaseService) DeletePostPictureLinks(ctx context.Context, po
 }
 
 // check codes below
-func (p *PostgresDatabaseService) GetPostBookmarkedBy(ctx context.Context, postID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT user_id FROM user_bookmarked_posts WHERE post_id = $1", postID)
+func (p *PostgresDatabaseService) GetPostBookmarkedBy(ctx context.Context, postId string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT user_id FROM user_bookmarked_posts WHERE post_id = $1", postId)
 	if err != nil {
 		return nil, err
 	}
@@ -381,18 +395,18 @@ func (p *PostgresDatabaseService) GetPostBookmarkedBy(ctx context.Context, postI
 	return users, nil
 }
 
-func (p *PostgresDatabaseService) AddPostBookmarkedBy(ctx context.Context, postID string, userIDs []string) error {
-	if len(userIDs) == 0 {
+func (p *PostgresDatabaseService) AddPostBookmarkedBy(ctx context.Context, postId string, userIds []string) error {
+	if len(userIds) == 0 {
 		return nil
 	}
 
 	query := "INSERT INTO user_bookmarked_posts (post_id, user_id) VALUES "
-	values := []interface{}{postID}
+	values := []interface{}{postId}
 	valueStrings := []string{}
 
-	for i, userID := range userIDs {
+	for i, userId := range userIds {
 		valueStrings = append(valueStrings, fmt.Sprintf("($1, $%d)", i+2))
-		values = append(values, userID)
+		values = append(values, userId)
 	}
 
 	query += strings.Join(valueStrings, ", ") + " ON CONFLICT DO NOTHING"
@@ -405,13 +419,13 @@ func (p *PostgresDatabaseService) AddPostBookmarkedBy(ctx context.Context, postI
 	return nil
 }
 
-func (p *PostgresDatabaseService) DeletePostBookmarkedBy(ctx context.Context, postID string, userIDs []string) error {
-	if len(userIDs) == 0 {
+func (p *PostgresDatabaseService) DeletePostBookmarkedBy(ctx context.Context, postId string, userIds []string) error {
+	if len(userIds) == 0 {
 		return nil
 	}
 
 	query := "DELETE FROM user_bookmarked_posts WHERE post_id = $1 AND user_id = ANY($2)"
-	_, err := p.db.ExecContext(ctx, query, postID, pq.Array(userIDs))
+	_, err := p.db.ExecContext(ctx, query, postId, pq.Array(userIds))
 	if err != nil {
 		return err
 	}
@@ -419,8 +433,8 @@ func (p *PostgresDatabaseService) DeletePostBookmarkedBy(ctx context.Context, po
 	return nil
 }
 
-func (p *PostgresDatabaseService) GetUserBookmarkedPosts(ctx context.Context, userID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT post_id FROM user_bookmarked_posts WHERE user_id = $1", userID)
+func (p *PostgresDatabaseService) GetUserBookmarkedPosts(ctx context.Context, userId string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT post_id FROM user_bookmarked_posts WHERE user_id = $1", userId)
 	if err != nil {
 		return nil, err
 	}
@@ -438,8 +452,8 @@ func (p *PostgresDatabaseService) GetUserBookmarkedPosts(ctx context.Context, us
 	return posts, nil
 }
 
-func (p *PostgresDatabaseService) GetUserLikedPosts(ctx context.Context, userID string) ([]string, error) {
-	rows, err := p.db.QueryContext(ctx, "SELECT post_id FROM user_liked_posts WHERE user_id = $1", userID)
+func (p *PostgresDatabaseService) GetUserLikedPosts(ctx context.Context, userId string) ([]string, error) {
+	rows, err := p.db.QueryContext(ctx, "SELECT post_id FROM user_liked_posts WHERE user_id = $1", userId)
 	if err != nil {
 		return nil, err
 	}

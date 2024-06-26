@@ -28,36 +28,39 @@ type PostCacheService interface {
 
 	// get method default without pipeliner, cmd version with pipeliner.
 	// set method default with pipeliner
-	GetPost(ctx context.Context, postID string) (*types.Post, error)
+	GetPost(ctx context.Context, postId string) (*types.Post, error)
+	RemovePost(ctx context.Context, postId string) error
 
-	GetPostDetails(ctx context.Context, postID string) (*types.PostDetailsPtr, error)
-	SetPostDetails(ctx context.Context, postID string, post *types.PostDetailsPtr) error
+	GetPostDetails(ctx context.Context, postId string) (*types.PostDetailsPtr, error)
+	SetPostDetails(ctx context.Context, postId string, post *types.PostDetailsPtr) error
+	RemovePostDetails(ctx context.Context, postId string) error
 
-	GetPostLikedBy(ctx context.Context, postID string) ([]string, error)
-	AddPostLikedBy(ctx context.Context, postID string, userIds []string) error
-	RemovePostLikedBy(ctx context.Context, postID string, userIds []string) error
+	GetPostLikedBy(ctx context.Context, postId string) ([]string, error)
+	AddPostLikedBy(ctx context.Context, postId string, userIds []string) error
+	RemovePostLikedBy(ctx context.Context, postId string, userIds []string) error
 
-	GetPostTags(ctx context.Context, postID string) ([]string, error)
-	AddPostTags(ctx context.Context, postID string, tags []string) error
-	RemovePostTags(ctx context.Context, postID string, tags []string) error
+	GetPostTags(ctx context.Context, postId string) ([]string, error)
+	AddPostTags(ctx context.Context, postId string, tags []string) error
+	RemovePostTags(ctx context.Context, postId string, tags []string) error
 
-	GetPostPictureLinks(ctx context.Context, postID string) ([]string, error)
-	AddPostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error
-	RemovePostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error
+	GetPostPictureLinks(ctx context.Context, postId string) ([]string, error)
+	AddPostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error
+	RemovePostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error
 
-	GetPostCommentIds(ctx context.Context, postID string) ([]string, error)
-	AddPostCommentIds(ctx context.Context, postID string, commentIds []string) error
-	RemovePostCommentIds(ctx context.Context, postID string, commentIds []string) error
+	GetPostCommentIds(ctx context.Context, postId string) ([]string, error)
+	AddPostCommentIds(ctx context.Context, postId string, commentIds []string) error
+	RemovePostCommentIds(ctx context.Context, postId string, commentIds []string) error
+	RemovePostComments(ctx context.Context, postId string) error
 
-	GetComment(ctx context.Context, commentID string) (*types.Comment, error)
-	SetComment(ctx context.Context, commentID string, comment *types.Comment) error
-	RemoveComment(ctx context.Context, commentID string) error
+	GetComment(ctx context.Context, commentId string) (*types.Comment, error)
+	SetComment(ctx context.Context, commentId string, comment *types.Comment) error
+	RemoveComments(ctx context.Context, commentIds []string) error
 
-	SetUser(ctx context.Context, userID string, user *types.User) error
-	GetUser(ctx context.Context, userID string) (*types.User, error)
-	RemoveUser(ctx context.Context, userID string) error
+	SetUser(ctx context.Context, userId string, user *types.User) error
+	GetUser(ctx context.Context, userId string) (*types.User, error)
+	RemoveUser(ctx context.Context, userId string) error
 
-	AddPostCacheScore(ctx context.Context, postID string, score int64) error
+	AddPostCacheScore(ctx context.Context, postId string, score int64) error
 	GetNonPopularPosts(ctx context.Context, limit int64) ([]types.Post, error)
 	WriteBackToDB(ctx context.Context, db dbtype.DatabaseService, postIds []string) error
 }
@@ -74,10 +77,10 @@ type GeoCacheService interface {
 type UserCacheService interface {
 	CacheService
 
-	GetUser(ctx context.Context, userID string) (*types.User, error)
+	GetUser(ctx context.Context, userId string) (*types.User, error)
 	SetUserOptional(ctx context.Context, userId string, user *types.UserPtr) error
 	SetUser(ctx context.Context, userId string, user *types.User) error
-	RemoveUser(ctx context.Context, userID string) error
+	RemoveUser(ctx context.Context, userId string) error
 }
 
 type CachedPost struct {

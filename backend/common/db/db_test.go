@@ -81,8 +81,8 @@ func TestPostgresDatabaseService_GetPostsDetails(t *testing.T) {
 		WillReturnRows(rows)
 
 	ctx := context.Background()
-	postIDs := []string{"1", "2"}
-	posts, err := service.GetPostsDetails(ctx, postIDs)
+	postIds := []string{"1", "2"}
+	posts, err := service.GetPostsDetails(ctx, postIds)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, posts)
@@ -458,10 +458,10 @@ func TestPostgresDatabaseService_GetPostCommentIds(t *testing.T) {
 		WillReturnRows(rows)
 
 	ctx := context.Background()
-	commentIDs, err := service.GetPostCommentIds(ctx, "post1")
+	commentIds, err := service.GetPostCommentIds(ctx, "post1")
 
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, []string{"comment1", "comment2"}, commentIDs)
+	assert.ElementsMatch(t, []string{"comment1", "comment2"}, commentIds)
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
@@ -476,7 +476,7 @@ func TestPostgresDatabaseService_AddPostCommentIds(t *testing.T) {
 
 	service := postgres.NewPostgresDatabaseService(db)
 
-	commentIDs := []string{"comment1", "comment2"}
+	commentIds := []string{"comment1", "comment2"}
 
 	query := "INSERT INTO post_comments \\(post_id, comment_id\\) VALUES \\(\\$1, \\$2\\), \\(\\$1, \\$3\\) ON CONFLICT DO NOTHING"
 	mock.ExpectExec(query).
@@ -484,7 +484,7 @@ func TestPostgresDatabaseService_AddPostCommentIds(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(1, 2))
 
 	ctx := context.Background()
-	err = service.AddPostCommentIds(ctx, "post1", commentIDs)
+	err = service.AddPostCommentIds(ctx, "post1", commentIds)
 
 	assert.NoError(t, err)
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -501,15 +501,15 @@ func TestPostgresDatabaseService_DeletePostCommentIds(t *testing.T) {
 
 	service := postgres.NewPostgresDatabaseService(db)
 
-	commentIDs := []string{"comment1", "comment2"}
+	commentIds := []string{"comment1", "comment2"}
 
 	query := "DELETE FROM post_comments WHERE post_id = \\$1 AND comment_id = ANY\\(\\$2\\)"
 	mock.ExpectExec(query).
-		WithArgs("post1", pq.Array(commentIDs)).
+		WithArgs("post1", pq.Array(commentIds)).
 		WillReturnResult(sqlmock.NewResult(1, 2))
 
 	ctx := context.Background()
-	err = service.DeletePostCommentIds(ctx, "post1", commentIDs)
+	err = service.DeletePostCommentIds(ctx, "post1", commentIds)
 
 	assert.NoError(t, err)
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -527,9 +527,9 @@ func TestPostgresDatabaseService_GetCommentById(t *testing.T) {
 	service := postgres.NewPostgresDatabaseService(db)
 
 	// Mock data
-	commentID := "comment1"
+	commentId := "comment1"
 	expectedComment := &types.Comment{
-		CommentId: commentID,
+		CommentId: commentId,
 		PostId:    "post1",
 		UserId:    "user1",
 		Content:   "This is a comment.",
@@ -542,11 +542,11 @@ func TestPostgresDatabaseService_GetCommentById(t *testing.T) {
 		AddRow(expectedComment.CommentId, expectedComment.PostId, expectedComment.UserId, expectedComment.Content, expectedComment.CreatedAt, expectedComment.UpdatedAt, expectedComment.Likes)
 
 	mock.ExpectQuery("SELECT comment_id, post_id, user_id, content, created_at, updated_at, likes FROM comments WHERE comment_id = \\$1").
-		WithArgs(commentID).
+		WithArgs(commentId).
 		WillReturnRows(rows)
 
 	ctx := context.Background()
-	comment, err := service.GetCommentById(ctx, commentID)
+	comment, err := service.GetCommentById(ctx, commentId)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedComment, comment)
@@ -565,9 +565,9 @@ func TestPostgresDatabaseService_SetCommentById(t *testing.T) {
 	service := postgres.NewPostgresDatabaseService(db)
 
 	// Mock data
-	commentID := "comment1"
+	commentId := "comment1"
 	comment := &types.Comment{
-		CommentId: commentID,
+		CommentId: commentId,
 		PostId:    "post1",
 		UserId:    "user1",
 		Content:   "This is a comment.",
@@ -581,7 +581,7 @@ func TestPostgresDatabaseService_SetCommentById(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	ctx := context.Background()
-	err = service.SetCommentById(ctx, commentID, comment)
+	err = service.SetCommentById(ctx, commentId, comment)
 
 	assert.NoError(t, err)
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -598,14 +598,14 @@ func TestPostgresDatabaseService_DeleteCommentById(t *testing.T) {
 
 	service := postgres.NewPostgresDatabaseService(db)
 
-	commentID := "comment1"
+	commentId := "comment1"
 
 	mock.ExpectExec("DELETE FROM comments WHERE comment_id = \\$1").
-		WithArgs(commentID).
+		WithArgs(commentId).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	ctx := context.Background()
-	err = service.DeleteCommentById(ctx, commentID)
+	err = service.DeleteCommentById(ctx, commentId)
 
 	assert.NoError(t, err)
 	if err := mock.ExpectationsWereMet(); err != nil {

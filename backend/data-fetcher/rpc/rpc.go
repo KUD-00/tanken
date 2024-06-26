@@ -51,14 +51,14 @@ func (s *server) GetPostsByLocation(ctx context.Context, req *connect.Request[pb
 
 	//TODO: 聚类查询+算法得到应该返回的帖子ID
 
-	var postIDs []string
+	var postIds []string
 	for _, geoLoc := range postGeoDatas {
 		if geoLoc.Name != "" {
-			postIDs = append(postIDs, geoLoc.Name)
+			postIds = append(postIds, geoLoc.Name)
 		}
 	}
 
-	posts, err := getPosts(ctx, postIDs, s.postCache, s.geoCache, s.db)
+	posts, err := getPosts(ctx, postIds, s.postCache, s.geoCache, s.db)
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting posts: %v", err)
@@ -125,17 +125,17 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 	longitude := req.Msg.Location.Longitude
 	latitude := req.Msg.Location.Latitude
 
-	postID, err := generateUniquePostID(ctx, s.geoCache)
+	postId, err := generateUniquePostID(ctx, s.geoCache)
 	if err != nil {
 		return newUploadErrorResponse("Failed to get or register new postId: " + err.Error()), nil
 	}
 
-	pictureLink, err := uploadPictureToS3(ctx, req.Msg.PictureChunk, s.uploaderS3, postID)
+	pictureLink, err := uploadPictureToS3(ctx, req.Msg.PictureChunk, s.uploaderS3, postId)
 	if err != nil {
 		return newUploadErrorResponse("Failed to upload picture to S3: " + err.Error()), nil
 	}
 
-	err = registerPostToGeoRedis(ctx, postID, longitude, latitude, s.geoCache)
+	err = registerPostToGeoRedis(ctx, postId, longitude, latitude, s.geoCache)
 	if err != nil {
 		return newUploadErrorResponse("Failed to register new postId to geo-redis: " + err.Error()), nil
 	}
@@ -154,29 +154,49 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 		CacheScore: commonUtils.Int64Ptr(1),
 	}
 
-	s.postCache.SetPostDetails(ctx, postID, details)
-	s.postCache.AddPostTags(ctx, postID, req.Msg.Tags)
-	s.postCache.AddPostPictureLinks(ctx, postID, []string{pictureLink})
+	s.postCache.SetPostDetails(ctx, postId, details)
+	s.postCache.AddPostTags(ctx, postId, req.Msg.Tags)
+	s.postCache.AddPostPictureLinks(ctx, postId, []string{pictureLink})
 
 	_, err = pipe.Exec(ctx)
 
 	// Attempt to rollback if caching fails
 	if err != nil {
-		if err = removePostIDinGeoRedis(ctx, postID, s.geoCache); err != nil {
+		if err = removePostIDinGeoRedis(ctx, postId, s.geoCache); err != nil {
 			return newUploadErrorResponse("Failed to cache post details and failed to rollback geoRedis: " + err.Error()), nil
 		}
 		return newUploadErrorResponse("Failed to cache post details, rollback geoRedis is success: " + err.Error()), nil
 	}
 
-	return connect.NewResponse(&pb.AddPostResponse{Ok: 1, PostId: postID}), nil
+	return connect.NewResponse(&pb.AddPostResponse{Ok: 1, PostId: postId}), nil
 }
 
 func (s *server) HardDeletePost(ctx context.Context, req *connect.Request[pb.HardDeletePostRequest]) (*connect.Response[pb.HardDeletePostResponse], error) {
-	return connect.NewResponse(&pb.HardDeletePostResponse{}), nil
+	err := s.postCache.RemovePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeletePostResponse{Ok: 0, Msg: "Error in hard delete post in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.HardDeletePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeletePostResponse{Ok: 0, Msg: "Error in hard delete post in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.HardDeletePostResponse{Ok: 1}), nil
 }
 
 func (s *server) SoftDeletePost(ctx context.Context, req *connect.Request[pb.SoftDeletePostRequest]) (*connect.Response[pb.SoftDeletePostResponse], error) {
-	return connect.NewResponse(&pb.SoftDeletePostResponse{}), nil
+	err := s.postCache.RemovePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeletePostResponse{Ok: 0, Msg: "Error in soft delete post in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.SoftDeletePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeletePostResponse{Ok: 0, Msg: "Error in soft delete post in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.SoftDeletePostResponse{Ok: 1}), nil
 }
 
 // Integrated tested
@@ -197,14 +217,14 @@ func (s *server) RemoveLike(ctx context.Context, req *connect.Request[pb.RemoveL
 
 // Integrated tested
 func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error) {
-	commentID, err := generateUniqueCommentID(ctx, req.Msg.PostId, s.postCache, s.db)
+	commentId, err := generateUniqueCommentID(ctx, req.Msg.PostId, s.postCache, s.db)
 
 	if err != nil {
 		return connect.NewResponse(&pb.AddCommentResponse{Ok: 0, Msg: "err generating unique comment ID" + err.Error()}), nil
 	}
 
 	comment := types.Comment{
-		CommentId: commentID,
+		CommentId: commentId,
 		PostId:    req.Msg.PostId,
 		UserId:    req.Msg.UserId,
 		Content:   req.Msg.Content,
@@ -214,7 +234,7 @@ func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddComm
 		Status:    int64(1),
 	}
 
-	err = s.postCache.SetComment(ctx, commentID, &comment)
+	err = s.postCache.SetComment(ctx, commentId, &comment)
 	if err != nil {
 		return connect.NewResponse(&pb.AddCommentResponse{Ok: 0, Msg: err.Error()}), nil
 	}

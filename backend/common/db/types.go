@@ -6,44 +6,45 @@ import (
 )
 
 type DatabaseService interface {
-	GetPost(ctx context.Context, postID string) (*types.Post, error)
-	SetPost(ctx context.Context, postID string, post *types.Post) error
-	DeletePost(ctx context.Context, postID string) error
+	GetPost(ctx context.Context, postId string) (*types.Post, error)
+	SetPost(ctx context.Context, postId string, post *types.Post) error
+	SoftDeletePost(ctx context.Context, postId string) error
+	HardDeletePost(ctx context.Context, postId string) error
 
-	GetPostDetails(ctx context.Context, postID string) (*types.PostDetails, error)
-	SetPostDetails(ctx context.Context, postID string, post *types.PostDetails) error
+	GetPostDetails(ctx context.Context, postId string) (*types.PostDetails, error)
+	SetPostDetails(ctx context.Context, postId string, post *types.PostDetails) error
 
-	GetPostLikedBy(ctx context.Context, postID string) ([]string, error)
-	AddPostLikedBy(ctx context.Context, postID string, userId []string) error
-	DeletePostLikedBy(ctx context.Context, postID string, userId []string) error
+	GetPostLikedBy(ctx context.Context, postId string) ([]string, error)
+	AddPostLikedBy(ctx context.Context, postId string, userId []string) error
+	DeletePostLikedBy(ctx context.Context, postId string, userId []string) error
 
-	GetPostBookmarkedBy(ctx context.Context, postID string) ([]string, error)
-	AddPostBookmarkedBy(ctx context.Context, postID string, userId []string) error
-	DeletePostBookmarkedBy(ctx context.Context, postID string, userId []string) error
+	GetPostBookmarkedBy(ctx context.Context, postId string) ([]string, error)
+	AddPostBookmarkedBy(ctx context.Context, postId string, userId []string) error
+	DeletePostBookmarkedBy(ctx context.Context, postId string, userId []string) error
 
-	GetPostTags(ctx context.Context, postID string) ([]string, error)
-	AddPostTags(ctx context.Context, postID string, tags []string) error
-	DeletePostTags(ctx context.Context, postID string, tags []string) error
+	GetPostTags(ctx context.Context, postId string) ([]string, error)
+	AddPostTags(ctx context.Context, postId string, tags []string) error
+	DeletePostTags(ctx context.Context, postId string, tags []string) error
 
-	GetPostPictureLinks(ctx context.Context, postID string) ([]string, error)
-	AddPostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error
-	DeletePostPictureLinks(ctx context.Context, postID string, pictureLinks []string) error
+	GetPostPictureLinks(ctx context.Context, postId string) ([]string, error)
+	AddPostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error
+	DeletePostPictureLinks(ctx context.Context, postId string, pictureLinks []string) error
 
-	GetPostCommentIds(ctx context.Context, postID string) ([]string, error)
-	AddPostCommentIds(ctx context.Context, postID string, commentIds []string) error
-	DeletePostCommentIds(ctx context.Context, postID string, commentIds []string) error
+	GetPostCommentIds(ctx context.Context, postId string) ([]string, error)
+	AddPostCommentIds(ctx context.Context, postId string, commentIds []string) error
+	DeletePostCommentIds(ctx context.Context, postId string, commentIds []string) error
 
-	GetCommentById(ctx context.Context, commentID string) (*types.Comment, error)
-	SetCommentById(ctx context.Context, commentID string, comment *types.Comment) error
-	DeleteCommentById(ctx context.Context, commentID string) error
+	GetCommentById(ctx context.Context, commentId string) (*types.Comment, error)
+	SetCommentById(ctx context.Context, commentId string, comment *types.Comment) error
+	DeleteCommentById(ctx context.Context, commentId string) error
 
 	// About User
-	GetUserById(ctx context.Context, userID string) (*types.User, error)
+	GetUserById(ctx context.Context, userId string) (*types.User, error)
 	GetUserByOauthInfo(ctx context.Context, email string, oauthProvider string) (*types.User, error)
-	SetUserById(ctx context.Context, userID string, user *types.UserPtr) error
-	SoftDeleteUserById(ctx context.Context, userID string) error
-	HardDeleteUserById(ctx context.Context, userID string) error
+	SetUserById(ctx context.Context, userId string, user *types.UserPtr) error
+	SoftDeleteUserById(ctx context.Context, userId string) error
+	HardDeleteUserById(ctx context.Context, userId string) error
 
-	GetUserLikedPosts(ctx context.Context, userID string) ([]string, error)
-	GetUserBookmarkedPosts(ctx context.Context, userID string) ([]string, error)
+	GetUserLikedPosts(ctx context.Context, userId string) ([]string, error)
+	GetUserBookmarkedPosts(ctx context.Context, userId string) ([]string, error)
 }

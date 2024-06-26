@@ -7,10 +7,10 @@ import (
 	"tanken/backend/common/types"
 )
 
-func (p *PostgresDatabaseService) GetUserById(ctx context.Context, userID string) (*types.User, error) {
+func (p *PostgresDatabaseService) GetUserById(ctx context.Context, userId string) (*types.User, error) {
 	var user types.User
 
-	err := p.db.QueryRowContext(ctx, "SELECT user_id, username, bio, profile_picture_link, subscribed FROM users WHERE user_id = $1", userID).Scan(
+	err := p.db.QueryRowContext(ctx, "SELECT user_id, username, bio, profile_picture_link, subscribed FROM users WHERE user_id = $1", userId).Scan(
 		&user.UserId,
 		&user.Username,
 		&user.Bio,
@@ -27,9 +27,9 @@ func (p *PostgresDatabaseService) GetUserById(ctx context.Context, userID string
 	return &user, nil
 }
 
-func (p *PostgresDatabaseService) SetUserById(ctx context.Context, userID string, user *types.UserPtr) error {
+func (p *PostgresDatabaseService) SetUserById(ctx context.Context, userId string, user *types.UserPtr) error {
 	query := "INSERT INTO users (user_id"
-	values := []interface{}{userID}
+	values := []interface{}{userId}
 	updates := " ON CONFLICT (user_id) DO UPDATE SET"
 
 	index := 2 // 第一个占位符是userID
@@ -88,8 +88,8 @@ func (p *PostgresDatabaseService) SetUserById(ctx context.Context, userID string
 	return nil
 }
 
-func (p *PostgresDatabaseService) HardDeleteUserById(ctx context.Context, userID string) error {
-	_, err := p.db.ExecContext(ctx, "DELETE FROM users WHERE user_id = $1", userID)
+func (p *PostgresDatabaseService) HardDeleteUserById(ctx context.Context, userId string) error {
+	_, err := p.db.ExecContext(ctx, "DELETE FROM users WHERE user_id = $1", userId)
 	if err != nil {
 		return err
 	}
