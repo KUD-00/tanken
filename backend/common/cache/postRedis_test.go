@@ -25,12 +25,12 @@ func TestPostRedisCacheService_GetPostDetailsCmd(t *testing.T) {
 
 	ctx, pipe := service.NewPipe(ctx)
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := map[string]string{"title": "Test Post", "content": "This is a test post"}
 
-	mock.ExpectHGetAll(postID).SetVal(expectedResult)
+	mock.ExpectHGetAll(postId).SetVal(expectedResult)
 
-	cmd, err := service.GetPostDetailsCmd(ctx, postID)
+	cmd, err := service.GetPostDetailsCmd(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, cmd)
 
@@ -50,7 +50,7 @@ func TestPostRedisCacheService_GetPostDetails(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := map[string]string{
 		"UpdatedAt": strconv.FormatInt(updatedAt, 10),
 		"CreatedAt": strconv.FormatInt(createdAt, 10),
@@ -61,9 +61,9 @@ func TestPostRedisCacheService_GetPostDetails(t *testing.T) {
 		"Status":    "1",
 	}
 
-	mock.ExpectHGetAll(postID).SetVal(expectedResult)
+	mock.ExpectHGetAll(postId).SetVal(expectedResult)
 
-	details, err := service.GetPostDetails(ctx, postID)
+	details, err := service.GetPostDetails(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, details)
 
@@ -84,7 +84,7 @@ func TestPostRedisCacheService_SetPostDetails(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	postDetails := &types.PostDetailsPtr{
 		UpdatedAt: utils.Int64Ptr(1672444800), // 2023-01-01T00:00:00Z
 		CreatedAt: utils.Int64Ptr(1640995200), // 2022-01-01T00:00:00Z
@@ -105,9 +105,9 @@ func TestPostRedisCacheService_SetPostDetails(t *testing.T) {
 		utils.PostCacheKeys.Status:    "1",
 	}
 
-	mock.ExpectHSet(postID, postDetailsMap).SetVal(int64(1))
+	mock.ExpectHSet(postId, postDetailsMap).SetVal(int64(1))
 
-	err := service.SetPostDetails(ctx, postID, postDetails)
+	err := service.SetPostDetails(ctx, postId, postDetails)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -119,14 +119,14 @@ func TestPostRedisCacheService_GetPostLikedByCmd(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"user1", "user2", "user3"}
 
 	ctx, pipe := service.NewPipe(ctx)
 
-	mock.ExpectSMembers(postID + utils.LikedBySuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.LikedBySuffix).SetVal(expectedResult)
 
-	cmd, err := service.GetPostLikedByCmd(ctx, postID)
+	cmd, err := service.GetPostLikedByCmd(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, cmd)
 
@@ -146,12 +146,12 @@ func TestPostRedisCacheService_GetPostLikedBy(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"user1", "user2", "user3"}
 
-	mock.ExpectSMembers(postID + utils.LikedBySuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.LikedBySuffix).SetVal(expectedResult)
 
-	result, err := service.GetPostLikedBy(ctx, postID)
+	result, err := service.GetPostLikedBy(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
@@ -166,17 +166,17 @@ func TestPostRedisCacheService_AddPostLikedBy(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
-	userIDs := []string{"user1", "user2", "user3"}
+	postId := "post123"
+	userIds := []string{"user1", "user2", "user3"}
 
-	args := make([]interface{}, len(userIDs))
-	for i, v := range userIDs {
+	args := make([]interface{}, len(userIds))
+	for i, v := range userIds {
 		args[i] = v
 	}
 
-	mock.ExpectSAdd(postID+utils.LikedBySuffix, args...).SetVal(3)
+	mock.ExpectSAdd(postId+utils.LikedBySuffix, args...).SetVal(3)
 
-	err := service.AddPostLikedBy(ctx, postID, userIDs)
+	err := service.AddPostLikedBy(ctx, postId, userIds)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -188,17 +188,17 @@ func TestPostRedisCacheService_RemovePostLikedBy(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
-	userIDs := []string{"user1", "user2", "user3"}
+	postId := "post123"
+	userIds := []string{"user1", "user2", "user3"}
 
-	args := make([]interface{}, len(userIDs))
-	for i, v := range userIDs {
+	args := make([]interface{}, len(userIds))
+	for i, v := range userIds {
 		args[i] = v
 	}
 
-	mock.ExpectSRem(postID+utils.LikedBySuffix, args...).SetVal(3)
+	mock.ExpectSRem(postId+utils.LikedBySuffix, args...).SetVal(3)
 
-	err := service.RemovePostLikedBy(ctx, postID, userIDs)
+	err := service.RemovePostLikedBy(ctx, postId, userIds)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -210,14 +210,14 @@ func TestPostRedisCacheService_GetPostTagsCmd(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"tag1", "tag2", "tag3"}
 
 	ctx, pipe := service.NewPipe(ctx)
 
-	mock.ExpectSMembers(postID + utils.TagsSuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.TagsSuffix).SetVal(expectedResult)
 
-	cmd, err := service.GetPostTagsCmd(ctx, postID)
+	cmd, err := service.GetPostTagsCmd(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, cmd)
 
@@ -237,12 +237,12 @@ func TestPostRedisCacheService_GetPostTags(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"tag1", "tag2", "tag3"}
 
-	mock.ExpectSMembers(postID + utils.TagsSuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.TagsSuffix).SetVal(expectedResult)
 
-	result, err := service.GetPostTags(ctx, postID)
+	result, err := service.GetPostTags(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
@@ -257,7 +257,7 @@ func TestPostRedisCacheService_AddPostTags(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	tags := []string{"tag1", "tag2", "tag3"}
 
 	args := make([]interface{}, len(tags))
@@ -265,9 +265,9 @@ func TestPostRedisCacheService_AddPostTags(t *testing.T) {
 		args[i] = v
 	}
 
-	mock.ExpectSAdd(postID+utils.TagsSuffix, args...).SetVal(3)
+	mock.ExpectSAdd(postId+utils.TagsSuffix, args...).SetVal(3)
 
-	err := service.AddPostTags(ctx, postID, tags)
+	err := service.AddPostTags(ctx, postId, tags)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -279,7 +279,7 @@ func TestPostRedisCacheService_RemovePostTags(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	tags := []string{"tag1", "tag2", "tag3"}
 
 	args := make([]interface{}, len(tags))
@@ -287,9 +287,9 @@ func TestPostRedisCacheService_RemovePostTags(t *testing.T) {
 		args[i] = v
 	}
 
-	mock.ExpectSRem(postID+utils.TagsSuffix, args...).SetVal(3)
+	mock.ExpectSRem(postId+utils.TagsSuffix, args...).SetVal(3)
 
-	err := service.RemovePostTags(ctx, postID, tags)
+	err := service.RemovePostTags(ctx, postId, tags)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -301,13 +301,13 @@ func TestPostRedisCacheService_GetPostPictureLinksCmd(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"link1", "link2", "link3"}
 
 	ctx, pipe := service.NewPipe(ctx)
-	mock.ExpectSMembers(postID + utils.PictureLinksSuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.PictureLinksSuffix).SetVal(expectedResult)
 
-	cmd, err := service.GetPostPictureLinksCmd(ctx, postID)
+	cmd, err := service.GetPostPictureLinksCmd(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, cmd)
 
@@ -327,12 +327,12 @@ func TestPostRedisCacheService_GetPostPictureLinks(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"link1", "link2", "link3"}
 
-	mock.ExpectSMembers(postID + utils.PictureLinksSuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.PictureLinksSuffix).SetVal(expectedResult)
 
-	result, err := service.GetPostPictureLinks(ctx, postID)
+	result, err := service.GetPostPictureLinks(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
@@ -347,7 +347,7 @@ func TestPostRedisCacheService_AddPostPictureLinks(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	pictureLinks := []string{"link1", "link2", "link3"}
 
 	args := make([]interface{}, len(pictureLinks))
@@ -355,9 +355,9 @@ func TestPostRedisCacheService_AddPostPictureLinks(t *testing.T) {
 		args[i] = v
 	}
 
-	mock.ExpectSAdd(postID+utils.PictureLinksSuffix, args...).SetVal(3)
+	mock.ExpectSAdd(postId+utils.PictureLinksSuffix, args...).SetVal(3)
 
-	err := service.AddPostPictureLinks(ctx, postID, pictureLinks)
+	err := service.AddPostPictureLinks(ctx, postId, pictureLinks)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -369,7 +369,7 @@ func TestPostRedisCacheService_RemovePostPictureLinks(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	pictureLinks := []string{"link1", "link2", "link3"}
 
 	args := make([]interface{}, len(pictureLinks))
@@ -377,9 +377,9 @@ func TestPostRedisCacheService_RemovePostPictureLinks(t *testing.T) {
 		args[i] = v
 	}
 
-	mock.ExpectSRem(postID+utils.PictureLinksSuffix, args...).SetVal(3)
+	mock.ExpectSRem(postId+utils.PictureLinksSuffix, args...).SetVal(3)
 
-	err := service.RemovePostPictureLinks(ctx, postID, pictureLinks)
+	err := service.RemovePostPictureLinks(ctx, postId, pictureLinks)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -391,13 +391,13 @@ func TestPostRedisCacheService_GetPostCommentIdsCmd(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"comment1", "comment2", "comment3"}
 
 	ctx, pipe := service.NewPipe(ctx)
-	mock.ExpectSMembers(postID + utils.CommentIdsSuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.CommentIdsSuffix).SetVal(expectedResult)
 
-	cmd, err := service.GetPostCommentIdsCmd(ctx, postID)
+	cmd, err := service.GetPostCommentIdsCmd(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, cmd)
 
@@ -417,12 +417,12 @@ func TestPostRedisCacheService_GetPostCommentIds(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	expectedResult := []string{"comment1", "comment2", "comment3"}
 
-	mock.ExpectSMembers(postID + utils.CommentIdsSuffix).SetVal(expectedResult)
+	mock.ExpectSMembers(postId + utils.CommentIdsSuffix).SetVal(expectedResult)
 
-	result, err := service.GetPostCommentIds(ctx, postID)
+	result, err := service.GetPostCommentIds(ctx, postId)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
@@ -437,7 +437,7 @@ func TestPostRedisCacheService_AddPostCommentIds(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	commentIds := []string{"comment1", "comment2", "comment3"}
 
 	args := make([]interface{}, len(commentIds))
@@ -445,9 +445,9 @@ func TestPostRedisCacheService_AddPostCommentIds(t *testing.T) {
 		args[i] = v
 	}
 
-	mock.ExpectSAdd(postID+utils.CommentIdsSuffix, args...).SetVal(3)
+	mock.ExpectSAdd(postId+utils.CommentIdsSuffix, args...).SetVal(3)
 
-	err := service.AddPostCommentIds(ctx, postID, commentIds)
+	err := service.AddPostCommentIds(ctx, postId, commentIds)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -459,7 +459,7 @@ func TestPostRedisCacheService_RemovePostCommentIds(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	postID := "post123"
+	postId := "post123"
 	commentIds := []string{"comment1", "comment2", "comment3"}
 
 	args := make([]interface{}, len(commentIds))
@@ -467,9 +467,9 @@ func TestPostRedisCacheService_RemovePostCommentIds(t *testing.T) {
 		args[i] = v
 	}
 
-	mock.ExpectSRem(postID+utils.CommentIdsSuffix, args...).SetVal(3)
+	mock.ExpectSRem(postId+utils.CommentIdsSuffix, args...).SetVal(3)
 
-	err := service.RemovePostCommentIds(ctx, postID, commentIds)
+	err := service.RemovePostCommentIds(ctx, postId, commentIds)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -481,7 +481,7 @@ func TestPostRedisCacheService_GetCommentCmd(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	commentID := "comment123"
+	commentId := "comment123"
 	expectedResult := map[string]string{
 		"createdAt": "2023-01-01T00:00:00Z",
 		"updatedAt": "2023-01-02T00:00:00Z",
@@ -492,9 +492,9 @@ func TestPostRedisCacheService_GetCommentCmd(t *testing.T) {
 	}
 
 	ctx, pipe := service.NewPipe(ctx)
-	mock.ExpectHGetAll(utils.CommentPrefix + commentID).SetVal(expectedResult)
+	mock.ExpectHGetAll(utils.CommentPrefix + commentId).SetVal(expectedResult)
 
-	cmd, err := service.GetCommentCmd(ctx, commentID)
+	cmd, err := service.GetCommentCmd(ctx, commentId)
 	assert.NoError(t, err)
 	assert.NotNil(t, cmd)
 
@@ -514,7 +514,7 @@ func TestPostRedisCacheService_GetComment(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	commentID := "comment123"
+	commentId := "comment123"
 	expectedResult := map[string]string{
 		"createdAt": strconv.FormatInt(createdAt, 10),
 		"updatedAt": strconv.FormatInt(updatedAt, 10),
@@ -524,9 +524,9 @@ func TestPostRedisCacheService_GetComment(t *testing.T) {
 		"likes":     "10",
 	}
 
-	mock.ExpectHGetAll(utils.CommentPrefix + commentID).SetVal(expectedResult)
+	mock.ExpectHGetAll(utils.CommentPrefix + commentId).SetVal(expectedResult)
 
-	result, err := service.GetComment(ctx, commentID)
+	result, err := service.GetComment(ctx, commentId)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
@@ -549,7 +549,7 @@ func TestPostRedisCacheService_SetComment(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	commentID := "comment123"
+	commentId := "comment123"
 	comment := &types.Comment{
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
@@ -568,9 +568,9 @@ func TestPostRedisCacheService_SetComment(t *testing.T) {
 		"likes":     comment.Likes,
 	}
 
-	mock.ExpectHSet(utils.CommentPrefix+commentID, commentMap).SetVal(1)
+	mock.ExpectHSet(utils.CommentPrefix+commentId, commentMap).SetVal(1)
 
-	err := service.SetComment(ctx, commentID, comment)
+	err := service.SetComment(ctx, commentId, comment)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -582,11 +582,11 @@ func TestPostRedisCacheService_RemoveComment(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	commentID := "comment123"
+	commentIds := []string{"comment123"}
 
-	mock.ExpectDel(utils.CommentPrefix + commentID).SetVal(1)
+	mock.ExpectDel(utils.CommentPrefix + commentIds[0]).SetVal(1)
 
-	err := service.RemoveComment(ctx, commentID)
+	err := service.RemoveComments(ctx, commentIds)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -598,7 +598,7 @@ func TestPostRedisCacheService_SetUser(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	userID := "user123"
+	userId := "user123"
 	user := &types.User{
 		UserId:             "user123",
 		Username:           "testuser",
@@ -615,9 +615,9 @@ func TestPostRedisCacheService_SetUser(t *testing.T) {
 		"subscribed":         user.Subscribed,
 	}
 
-	mock.ExpectHSet(utils.UserPrefix+userID, userMap).SetVal(1)
+	mock.ExpectHSet(utils.UserPrefix+userId, userMap).SetVal(1)
 
-	err := service.SetUser(ctx, userID, user)
+	err := service.SetUser(ctx, userId, user)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -629,7 +629,7 @@ func TestPostRedisCacheService_GetUserCmd(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	userID := "user123"
+	userId := "user123"
 	expectedResult := map[string]string{
 		"userId":             "user123",
 		"username":           "testuser",
@@ -639,9 +639,9 @@ func TestPostRedisCacheService_GetUserCmd(t *testing.T) {
 	}
 
 	ctx, pipe := service.NewPipe(ctx)
-	mock.ExpectHGetAll(utils.UserPrefix + userID).SetVal(expectedResult)
+	mock.ExpectHGetAll(utils.UserPrefix + userId).SetVal(expectedResult)
 
-	cmd, err := service.GetUserCmd(ctx, userID)
+	cmd, err := service.GetUserCmd(ctx, userId)
 	assert.NoError(t, err)
 	assert.NotNil(t, cmd)
 
@@ -661,7 +661,7 @@ func TestPostRedisCacheService_GetUser(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	userID := "user123"
+	userId := "user123"
 	expectedResult := map[string]string{
 		"userId":             "user123",
 		"username":           "testuser",
@@ -670,9 +670,9 @@ func TestPostRedisCacheService_GetUser(t *testing.T) {
 		"subscribed":         strconv.FormatInt(1, 10),
 	}
 
-	mock.ExpectHGetAll(utils.UserPrefix + userID).SetVal(expectedResult)
+	mock.ExpectHGetAll(utils.UserPrefix + userId).SetVal(expectedResult)
 
-	result, err := service.GetUser(ctx, userID)
+	result, err := service.GetUser(ctx, userId)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
@@ -694,11 +694,11 @@ func TestPostRedisCacheService_RemoveUser(t *testing.T) {
 	client, mock := redismock.NewClientMock()
 	service := &PostRedisCacheService{RedisBase: &RedisBase{client: client}}
 
-	userID := "user123"
+	userId := "user123"
 
-	mock.ExpectDel(utils.UserPrefix + userID).SetVal(1)
+	mock.ExpectDel(utils.UserPrefix + userId).SetVal(1)
 
-	err := service.RemoveUser(ctx, userID)
+	err := service.RemoveUser(ctx, userId)
 	assert.NoError(t, err)
 
 	assert.NoError(t, mock.ExpectationsWereMet())

@@ -34,10 +34,11 @@ service DataFetcherService{
   rpc RemoveBookmark(RemoveBookmarkRequest) returns (RemoveBookmarkResponse) {}
 
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse) {}
-  rpc RemoveComment(RemoveCommentRequest) returns (RemoveCommentResponse) {}
-  rpc ModifyComment(ModifyCommentRequest) returns (ModifyCommentResponse) {}
-  rpc GetCommentByCommentId(GetCommentByCommentIdRequest) returns (GetCommentsByPostIdResponse) {}
-  rpc GetCommentsByPostId(GetCommentsByPostIdRequest) returns (GetCommentByCommentIdResponse) {}
+  rpc HardDeleteComment(HardDeleteCommentRequest) returns (HardDeleteCommentResponse) {}
+  rpc SoftDeleteComment(SoftDeleteCommentRequest) returns (SoftDeleteCommentResponse) {}
+  rpc UpdateComment(UpdateCommentRequest) returns (UpdateCommentResponse) {}
+  rpc GetCommentsByCommentIds(GetCommentsByCommentIdsRequest) returns (GetCommentsByCommentIdsResponse) {}
+  rpc GetCommentsByPostId(GetCommentsByPostIdRequest) returns (GetCommentsByPostIdResponse) {}
   
   rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse);
   rpc SignUpUser(SignUpUserRequest) returns (SignUpUserResponse);

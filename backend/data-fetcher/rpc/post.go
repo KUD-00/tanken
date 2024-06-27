@@ -1,19 +1,22 @@
 package rpc
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"os"
 	"sync"
-	"time"
 
 	"tanken/backend/common/cache"
 	database "tanken/backend/common/db"
 	"tanken/backend/common/types"
-	utils "tanken/backend/common/utils"
 	pb "tanken/backend/data-fetcher/rpc/pb"
 
 	"connectrpc.com/connect"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
@@ -33,44 +36,6 @@ func generateUniquePostID(ctx context.Context, rs *cache.GeoRedisCacheService) (
 			return id, nil
 		}
 	}
-}
-
-// TODO: restructure this to a much more common one like cachePost
-func cacheNewPost(ctx context.Context, postID string, content string, userId string, tags []string, rs *cache.PostRedisCacheService) error {
-	ctx, pipe := rs.NewPipe(ctx)
-
-	timestamp := utils.Int64Ptr(time.Now().Unix())
-
-	details := &types.PostDetailsPtr{
-		CreatedAt:  timestamp,
-		UpdatedAt:  timestamp,
-		UserId:     utils.StringPtr(userId),
-		Content:    utils.StringPtr(content),
-		Likes:      utils.Int64Ptr(0),
-		Bookmarks:  utils.Int64Ptr(0),
-		CacheScore: utils.Int64Ptr(1),
-	}
-
-	rs.SetPostDetails(ctx, postID, details)
-	rs.AddPostTags(ctx, postID, tags)
-	rs.AddPostPictureLinks(ctx, postID, []string{})
-
-	cmds, _ := pipe.Exec(ctx)
-
-	for i, cmd := range cmds {
-		if cmd.Err() != nil {
-			switch i {
-			case 0:
-				return fmt.Errorf("error setting post details: %v", cmd.Err())
-			case 1:
-				return fmt.Errorf("error adding post tags: %v", cmd.Err())
-			case 2:
-				return fmt.Errorf("error adding post picture links: %v", cmd.Err())
-			}
-		}
-	}
-
-	return nil
 }
 
 func getPost(ctx context.Context, postId string, rs cache.PostCacheService, gc cache.GeoCacheService, db database.DatabaseService) (*types.Post, error) {
@@ -196,8 +161,8 @@ func removePostFromDB(ctx context.Context, postId string, postgres *sql.DB) erro
 }
 
 // Others
-func getPostGeoData(ctx context.Context, postID string, gc cache.GeoCacheService) (types.Location, error) {
-	geoPos, err := gc.GetGeoLocation(ctx, postID)
+func getPostGeoData(ctx context.Context, postId string, gc cache.GeoCacheService) (types.Location, error) {
+	geoPos, err := gc.GetGeoLocation(ctx, postId)
 	if err != nil {
 		return types.Location{}, fmt.Errorf("error retrieving geo data from Redis: %v", err)
 	}
@@ -268,14 +233,14 @@ func decrementLikes(ctx context.Context, postId string, userId string, rs cache.
 	return nil
 }
 
-func registerPostToGeoRedis(ctx context.Context, postID string, longitude, latitude float64, rs *cache.GeoRedisCacheService) error {
+func registerPostToGeoRedis(ctx context.Context, postId string, longitude, latitude float64, rs *cache.GeoRedisCacheService) error {
 	geoLocation := &redis.GeoLocation{
-		Name:      postID,
+		Name:      postId,
 		Longitude: float64(longitude),
 		Latitude:  float64(latitude),
 	}
 
-	err := rs.AddGeoLocation(ctx, geoLocation, postID)
+	err := rs.AddGeoLocation(ctx, geoLocation, postId)
 
 	if err != nil {
 		return fmt.Errorf("error registering post to geo-redis: %v", err)
@@ -284,12 +249,34 @@ func registerPostToGeoRedis(ctx context.Context, postID string, longitude, latit
 	return nil
 }
 
-func removePostIDinGeoRedis(ctx context.Context, postID string, rs *cache.GeoRedisCacheService) error {
-	if err := rs.RemoveGeoLocation(ctx, postID); err != nil {
+func removePostIDinGeoRedis(ctx context.Context, postId string, rs *cache.GeoRedisCacheService) error {
+	if err := rs.RemoveGeoLocation(ctx, postId); err != nil {
 		fmt.Errorf("error removing geo data: %v", err)
 		return err
 	}
 	return nil
+}
+
+func uploadPictureToS3(ctx context.Context, pictureChunk []byte, s3Uploader *s3manager.Uploader, key string) (string, error) {
+	bucketName := os.Getenv("POST_PICTURE_BUCKET_NAME")
+
+	if bucketName == "" || key == "" {
+		log.Fatalf("BUCKET_NAME or KEY environment variable is not set")
+	}
+
+	input := &s3manager.UploadInput{
+		Body:   aws.ReadSeekCloser(bytes.NewReader(pictureChunk)),
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(key),
+	}
+
+	_, err := s3Uploader.UploadWithContext(ctx, input)
+	if err != nil {
+		return "", fmt.Errorf("failed to upload picture to S3: %w", err)
+	}
+
+	s3URL := fmt.Sprintf("https://%s.s3.amazonaws.com/%s", bucketName, key)
+	return s3URL, nil
 }
 
 /*

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"tanken/backend/common/cache"
-	database "tanken/backend/common/db"
+	postgres "tanken/backend/common/db/postgres"
 	types "tanken/backend/common/types"
 	commonUtils "tanken/backend/common/utils"
 	"tanken/backend/data-fetcher/rpc/connectrpc/pbconnect"
@@ -18,6 +18,7 @@ import (
 	utils "tanken/backend/data-fetcher/utils"
 
 	"connectrpc.com/connect"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/net/http2"
@@ -25,11 +26,11 @@ import (
 )
 
 type server struct {
-	db        *database.PostgresDatabaseService
-	postCache *cache.PostRedisCacheService
-	geoCache  *cache.GeoRedisCacheService
-	userCache *cache.UserRedisCacheService
-	// uploader       *s3manager.Uploader
+	db         *postgres.PostgresDatabaseService
+	postCache  *cache.PostRedisCacheService
+	geoCache   *cache.GeoRedisCacheService
+	userCache  *cache.UserRedisCacheService
+	uploaderS3 *s3manager.Uploader
 }
 
 func (s *server) GetPostsByLocation(ctx context.Context, req *connect.Request[pb.GetPostsByLocationRequest]) (*connect.Response[pb.GetPostsByLocationResponse], error) {
@@ -50,14 +51,14 @@ func (s *server) GetPostsByLocation(ctx context.Context, req *connect.Request[pb
 
 	//TODO: 聚类查询+算法得到应该返回的帖子ID
 
-	var postIDs []string
+	var postIds []string
 	for _, geoLoc := range postGeoDatas {
 		if geoLoc.Name != "" {
-			postIDs = append(postIDs, geoLoc.Name)
+			postIds = append(postIds, geoLoc.Name)
 		}
 	}
 
-	posts, err := getPosts(ctx, postIDs, s.postCache, s.geoCache, s.db)
+	posts, err := getPosts(ctx, postIds, s.postCache, s.geoCache, s.db)
 
 	if err != nil {
 		return nil, fmt.Errorf("error getting posts: %v", err)
@@ -124,12 +125,17 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 	longitude := req.Msg.Location.Longitude
 	latitude := req.Msg.Location.Latitude
 
-	postID, err := generateUniquePostID(ctx, s.geoCache)
+	postId, err := generateUniquePostID(ctx, s.geoCache)
 	if err != nil {
 		return newUploadErrorResponse("Failed to get or register new postId: " + err.Error()), nil
 	}
 
-	err = registerPostToGeoRedis(ctx, postID, longitude, latitude, s.geoCache)
+	pictureLink, err := uploadPictureToS3(ctx, req.Msg.PictureChunk, s.uploaderS3, postId)
+	if err != nil {
+		return newUploadErrorResponse("Failed to upload picture to S3: " + err.Error()), nil
+	}
+
+	err = registerPostToGeoRedis(ctx, postId, longitude, latitude, s.geoCache)
 	if err != nil {
 		return newUploadErrorResponse("Failed to register new postId to geo-redis: " + err.Error()), nil
 	}
@@ -148,29 +154,49 @@ func (s *server) AddPost(ctx context.Context, req *connect.Request[pb.AddPostReq
 		CacheScore: commonUtils.Int64Ptr(1),
 	}
 
-	s.postCache.SetPostDetails(ctx, postID, details)
-	s.postCache.AddPostTags(ctx, postID, req.Msg.Tags)
-	s.postCache.AddPostPictureLinks(ctx, postID, []string{})
+	s.postCache.SetPostDetails(ctx, postId, details)
+	s.postCache.AddPostTags(ctx, postId, req.Msg.Tags)
+	s.postCache.AddPostPictureLinks(ctx, postId, []string{pictureLink})
 
 	_, err = pipe.Exec(ctx)
 
 	// Attempt to rollback if caching fails
 	if err != nil {
-		if err = removePostIDinGeoRedis(ctx, postID, s.geoCache); err != nil {
+		if err = removePostIDinGeoRedis(ctx, postId, s.geoCache); err != nil {
 			return newUploadErrorResponse("Failed to cache post details and failed to rollback geoRedis: " + err.Error()), nil
 		}
 		return newUploadErrorResponse("Failed to cache post details, rollback geoRedis is success: " + err.Error()), nil
 	}
 
-	return connect.NewResponse(&pb.AddPostResponse{Ok: 1, PostId: postID}), nil
+	return connect.NewResponse(&pb.AddPostResponse{Ok: 1, PostId: postId}), nil
 }
 
 func (s *server) HardDeletePost(ctx context.Context, req *connect.Request[pb.HardDeletePostRequest]) (*connect.Response[pb.HardDeletePostResponse], error) {
-	return connect.NewResponse(&pb.HardDeletePostResponse{}), nil
+	err := s.postCache.RemovePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeletePostResponse{Ok: 0, Msg: "Error in hard delete post in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.HardDeletePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeletePostResponse{Ok: 0, Msg: "Error in hard delete post in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.HardDeletePostResponse{Ok: 1}), nil
 }
 
 func (s *server) SoftDeletePost(ctx context.Context, req *connect.Request[pb.SoftDeletePostRequest]) (*connect.Response[pb.SoftDeletePostResponse], error) {
-	return connect.NewResponse(&pb.SoftDeletePostResponse{}), nil
+	err := s.postCache.RemovePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeletePostResponse{Ok: 0, Msg: "Error in soft delete post in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.SoftDeletePost(ctx, req.Msg.PostId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeletePostResponse{Ok: 0, Msg: "Error in soft delete post in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.SoftDeletePostResponse{Ok: 1}), nil
 }
 
 // Integrated tested
@@ -191,8 +217,24 @@ func (s *server) RemoveLike(ctx context.Context, req *connect.Request[pb.RemoveL
 
 // Integrated tested
 func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddCommentRequest]) (*connect.Response[pb.AddCommentResponse], error) {
-	err := cacheNewComment(ctx, req.Msg.PostId, req.Msg.Content, req.Msg.UserId, s.postCache, s.db)
+	commentId, err := generateUniqueCommentID(ctx, req.Msg.PostId, s.postCache, s.db)
 
+	if err != nil {
+		return connect.NewResponse(&pb.AddCommentResponse{Ok: 0, Msg: "err generating unique comment ID" + err.Error()}), nil
+	}
+
+	comment := types.Comment{
+		CommentId: commentId,
+		PostId:    req.Msg.PostId,
+		UserId:    req.Msg.UserId,
+		Content:   req.Msg.Content,
+		CreatedAt: time.Now().Unix(),
+		UpdatedAt: time.Now().Unix(),
+		Likes:     0,
+		Status:    int64(1),
+	}
+
+	err = s.postCache.SetComment(ctx, commentId, &comment)
 	if err != nil {
 		return connect.NewResponse(&pb.AddCommentResponse{Ok: 0, Msg: err.Error()}), nil
 	}
@@ -200,9 +242,70 @@ func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddComm
 	return connect.NewResponse(&pb.AddCommentResponse{Ok: 1}), nil
 }
 
-func (s *server) RemoveComment(ctx context.Context, req *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error) {
+func (s *server) HardDeleteComment(ctx context.Context, req *connect.Request[pb.HardDeleteCommentRequest]) (*connect.Response[pb.HardDeleteCommentResponse], error) {
+	ctx, pipe := s.postCache.NewPipe(ctx)
+	s.postCache.RemoveComments(ctx, []string{req.Msg.CommentId})
+	s.postCache.RemovePostCommentIds(ctx, req.Msg.PostId, []string{req.Msg.CommentId})
 
-	return connect.NewResponse(&pb.RemoveCommentResponse{}), nil
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.HardDeleteCommentById(ctx, req.Msg.CommentId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.HardDeleteCommentResponse{Ok: 1}), nil
+}
+
+func (s *server) SoftDeleteComment(ctx context.Context, req *connect.Request[pb.SoftDeleteCommentRequest]) (*connect.Response[pb.SoftDeleteCommentResponse], error) {
+	ctx, pipe := s.postCache.NewPipe(ctx)
+	s.postCache.RemoveComments(ctx, []string{req.Msg.CommentId})
+	s.postCache.RemovePostCommentIds(ctx, req.Msg.PostId, []string{req.Msg.CommentId})
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.SoftDeleteCommentById(ctx, req.Msg.CommentId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.SoftDeleteCommentResponse{Ok: 1}), nil
+}
+
+// TODO : not completed
+func (s *server) UpdateComment(ctx context.Context, req *connect.Request[pb.UpdateCommentRequest]) (*connect.Response[pb.UpdateCommentResponse], error) {
+	// if cached, just modify in cache
+	if exist, err := s.postCache.IsKeyExist(ctx, req.Msg.CommentId); err == nil && exist {
+		comment, err := s.postCache.GetComment(ctx, req.Msg.CommentId)
+		if err != nil {
+			return connect.NewResponse(&pb.UpdateCommentResponse{}), nil
+		}
+
+		comment.Content = req.Msg.Content
+		comment.UpdatedAt = time.Now().Unix()
+
+		err = s.postCache.SetComment(ctx, req.Msg.CommentId, comment)
+		if err != nil {
+			return connect.NewResponse(&pb.UpdateCommentResponse{}), nil
+		}
+	}
+
+	// TODO: if not cached, do we need cache? hard to say but... okay just modify it in db. or if the post is cached, we will cache it maybe?
+	return connect.NewResponse(&pb.UpdateCommentResponse{}), nil
+}
+
+func (s *server) GetCommentsByCommentIds(ctx context.Context, req *connect.Request[pb.GetCommentsByCommentIdsRequest]) (*connect.Response[pb.GetCommentsByCommentIdsResponse], error) {
+	return connect.NewResponse(&pb.GetCommentsByCommentIdsResponse{}), nil
+}
+
+func (s *server) GetCommentsByPostId(ctx context.Context, req *connect.Request[pb.GetCommentsByPostIdRequest]) (*connect.Response[pb.GetCommentsByPostIdResponse], error) {
+	return connect.NewResponse(&pb.GetCommentsByPostIdResponse{}), nil
 }
 
 func (s *server) AddBookmark(ctx context.Context, req *connect.Request[pb.AddBookmarkRequest]) (*connect.Response[pb.AddBookmarkResponse], error) {
@@ -218,25 +321,46 @@ func (s *server) WriteBackCache(ctx context.Context, req *connect.Request[pb.Wri
 }
 
 func (s *server) GetUserInfoByOAuth(ctx context.Context, req *connect.Request[pb.GetUserInfoByOAuthRequest]) (*connect.Response[pb.GetUserInfoByOAuthResponse], error) {
-	user := pb.User{}
+	user, err := s.db.GetUserByOauthInfo(ctx, req.Msg.Email, req.Msg.Provider)
+	if err != nil {
+		return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 0, Msg: err.Error()}), nil
+	}
 
-	//TODO:
-	/* 	err := s.db.QueryRowContext(ctx, "SELECT user_id, username, bio FROM users WHERE email = $1 AND provider = $2", req.Msg.Email, req.Msg.Provider).Scan(&user.UserId, &user.UserName, &user.Bio)
-	   	if err != nil {
-	   		if err == sql.ErrNoRows {
-	   			return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 2, Msg: "User not found"}), nil
-	   		}
-	   		return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 0, Msg: err.Error()}), nil
-	   	} */
+	pbUser := &pb.User{
+		UserId:             user.UserId,
+		UserName:           user.Username,
+		Bio:                user.Bio,
+		ProfilePictureLink: user.ProfilePictureLink,
+		Subscribed:         user.Subscribed,
+	}
 
-	return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 1, User: &user}), nil
+	return connect.NewResponse(&pb.GetUserInfoByOAuthResponse{Ok: 1, User: pbUser}), nil
 }
 
 func (s *server) HardDeleteUser(ctx context.Context, req *connect.Request[pb.HardDeleteUserRequest]) (*connect.Response[pb.HardDeleteUserResponse], error) {
+	err := s.userCache.RemoveUser(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteUserResponse{Ok: 0, Msg: "Error in hard delete user in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.HardDeleteUserById(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteUserResponse{Ok: 0, Msg: "Error in hard delete user in db:" + err.Error()}), nil
+	}
+
 	return connect.NewResponse(&pb.HardDeleteUserResponse{}), nil
 }
 
 func (s *server) SoftDeleteUser(ctx context.Context, req *connect.Request[pb.SoftDeleteUserRequest]) (*connect.Response[pb.SoftDeleteUserResponse], error) {
+	err := s.userCache.RemoveUser(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteUserResponse{Ok: 0, Msg: "Error in soft delete user in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.SoftDeleteUserById(ctx, req.Msg.UserId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteUserResponse{Ok: 0, Msg: "Error in soft delete user in db:" + err.Error()}), nil
+	}
 	return connect.NewResponse(&pb.SoftDeleteUserResponse{}), nil
 }
 
@@ -319,13 +443,13 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func StartServer(geoCache *redis.Client, postCache *redis.Client, userCache *redis.Client, db *sql.DB) {
+func StartServer(geoCache *redis.Client, postCache *redis.Client, userCache *redis.Client, db *sql.DB, uploaderS3 *s3manager.Uploader) {
 	srv := &server{
-		geoCache:  cache.NewGeoRedisCacheService(geoCache),
-		postCache: cache.NewPostRedisCacheService(postCache),
-		userCache: cache.NewUserRedisCacheService(userCache),
-		db:        database.NewPostgresDatabaseService(db),
-		// 		uploader:       uploader,
+		geoCache:   cache.NewGeoRedisCacheService(geoCache),
+		postCache:  cache.NewPostRedisCacheService(postCache),
+		userCache:  cache.NewUserRedisCacheService(userCache),
+		db:         postgres.NewPostgresDatabaseService(db),
+		uploaderS3: uploaderS3,
 	}
 
 	mux := http.NewServeMux()

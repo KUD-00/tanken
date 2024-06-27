@@ -59,7 +59,7 @@ gpt估计每个地理位置元素可能需要大约 40 字节的存储空间，1
 
 失效应该使一系列数据失效，同时将这一系列数据写入数据库，应该有一个后端监控redis的内存使用率然后进行写入备份
 
-post:postID hash
+post:postId hash
 - timestamp
 - userId
 - content
