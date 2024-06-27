@@ -242,12 +242,62 @@ func (s *server) AddComment(ctx context.Context, req *connect.Request[pb.AddComm
 	return connect.NewResponse(&pb.AddCommentResponse{Ok: 1}), nil
 }
 
-func (s *server) RemoveComment(ctx context.Context, req *connect.Request[pb.RemoveCommentRequest]) (*connect.Response[pb.RemoveCommentResponse], error) {
-	return connect.NewResponse(&pb.RemoveCommentResponse{}), nil
+func (s *server) HardDeleteComment(ctx context.Context, req *connect.Request[pb.HardDeleteCommentRequest]) (*connect.Response[pb.HardDeleteCommentResponse], error) {
+	ctx, pipe := s.postCache.NewPipe(ctx)
+	s.postCache.RemoveComments(ctx, []string{req.Msg.CommentId})
+	s.postCache.RemovePostCommentIds(ctx, req.Msg.PostId, []string{req.Msg.CommentId})
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.HardDeleteCommentById(ctx, req.Msg.CommentId)
+	if err != nil {
+		return connect.NewResponse(&pb.HardDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.HardDeleteCommentResponse{Ok: 1}), nil
 }
 
-func (s *server) ModifyComment(ctx context.Context, req *connect.Request[pb.ModifyCommentRequest]) (*connect.Response[pb.ModifyCommentResponse], error) {
-	return connect.NewResponse(&pb.ModifyCommentResponse{}), nil
+func (s *server) SoftDeleteComment(ctx context.Context, req *connect.Request[pb.SoftDeleteCommentRequest]) (*connect.Response[pb.SoftDeleteCommentResponse], error) {
+	ctx, pipe := s.postCache.NewPipe(ctx)
+	s.postCache.RemoveComments(ctx, []string{req.Msg.CommentId})
+	s.postCache.RemovePostCommentIds(ctx, req.Msg.PostId, []string{req.Msg.CommentId})
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in cache:" + err.Error()}), nil
+	}
+
+	err = s.db.SoftDeleteCommentById(ctx, req.Msg.CommentId)
+	if err != nil {
+		return connect.NewResponse(&pb.SoftDeleteCommentResponse{Ok: 0, Msg: "Error in hard delete comment in db:" + err.Error()}), nil
+	}
+
+	return connect.NewResponse(&pb.SoftDeleteCommentResponse{Ok: 1}), nil
+}
+
+// TODO : not completed
+func (s *server) UpdateComment(ctx context.Context, req *connect.Request[pb.UpdateCommentRequest]) (*connect.Response[pb.UpdateCommentResponse], error) {
+	// if cached, just modify in cache
+	if exist, err := s.postCache.IsKeyExist(ctx, req.Msg.CommentId); err == nil && exist {
+		comment, err := s.postCache.GetComment(ctx, req.Msg.CommentId)
+		if err != nil {
+			return connect.NewResponse(&pb.UpdateCommentResponse{}), nil
+		}
+
+		comment.Content = req.Msg.Content
+		comment.UpdatedAt = time.Now().Unix()
+
+		err = s.postCache.SetComment(ctx, req.Msg.CommentId, comment)
+		if err != nil {
+			return connect.NewResponse(&pb.UpdateCommentResponse{}), nil
+		}
+	}
+
+	// TODO: if not cached, do we need cache? hard to say but... okay just modify it in db. or if the post is cached, we will cache it maybe?
+	return connect.NewResponse(&pb.UpdateCommentResponse{}), nil
 }
 
 func (s *server) GetCommentsByCommentIds(ctx context.Context, req *connect.Request[pb.GetCommentsByCommentIdsRequest]) (*connect.Response[pb.GetCommentsByCommentIdsResponse], error) {

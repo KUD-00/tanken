@@ -34,8 +34,9 @@ service DataFetcherService{
   rpc RemoveBookmark(RemoveBookmarkRequest) returns (RemoveBookmarkResponse) {}
 
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse) {}
-  rpc RemoveComment(RemoveCommentRequest) returns (RemoveCommentResponse) {}
-  rpc ModifyComment(ModifyCommentRequest) returns (ModifyCommentResponse) {}
+  rpc HardDeleteComment(HardDeleteCommentRequest) returns (HardDeleteCommentResponse) {}
+  rpc SoftDeleteComment(SoftDeleteCommentRequest) returns (SoftDeleteCommentResponse) {}
+  rpc UpdateComment(UpdateCommentRequest) returns (UpdateCommentResponse) {}
   rpc GetCommentsByCommentIds(GetCommentsByCommentIdsRequest) returns (GetCommentsByCommentIdsResponse) {}
   rpc GetCommentsByPostId(GetCommentsByPostIdRequest) returns (GetCommentsByPostIdResponse) {}
   

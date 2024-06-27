@@ -6,7 +6,7 @@
 import { TestConnectionRequest, TestConnectionResponse } from "./data-fetcher-service_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 import { AddBookmarkRequest, AddBookmarkResponse, AddLikeRequest, AddLikeResponse, AddPostRequest, AddPostResponse, GetPostsByLocationRequest, GetPostsByLocationResponse, GetPostsByPostIdsRequest, GetPostsByPostIdsResponse, GetPostsByUserIdRequest, GetPostsByUserIdResponse, HardDeletePostRequest, HardDeletePostResponse, RemoveBookmarkRequest, RemoveBookmarkResponse, RemoveLikeRequest, RemoveLikeResponse, SoftDeletePostRequest, SoftDeletePostResponse } from "./post_pb.js";
-import { AddCommentRequest, AddCommentResponse, GetCommentsByCommentIdsRequest, GetCommentsByCommentIdsResponse, GetCommentsByPostIdRequest, GetCommentsByPostIdResponse, ModifyCommentRequest, ModifyCommentResponse, RemoveCommentRequest, RemoveCommentResponse } from "./comment_pb.js";
+import { AddCommentRequest, AddCommentResponse, GetCommentsByCommentIdsRequest, GetCommentsByCommentIdsResponse, GetCommentsByPostIdRequest, GetCommentsByPostIdResponse, HardDeleteCommentRequest, HardDeleteCommentResponse, SoftDeleteCommentRequest, SoftDeleteCommentResponse, UpdateCommentRequest, UpdateCommentResponse } from "./comment_pb.js";
 import { GetUserInfoByOAuthRequest, GetUserInfoByOAuthResponse, GetUserInfoRequest, GetUserInfoResponse, HardDeleteUserRequest, HardDeleteUserResponse, SignUpUserRequest, SignUpUserResponse, SoftDeleteUserRequest, SoftDeleteUserResponse, UpdateUserRequest, UpdateUserResponse } from "./user_pb.js";
 
 /**
@@ -124,21 +124,30 @@ export const DataFetcherService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc rpc.DataFetcherService.RemoveComment
+     * @generated from rpc rpc.DataFetcherService.HardDeleteComment
      */
-    removeComment: {
-      name: "RemoveComment",
-      I: RemoveCommentRequest,
-      O: RemoveCommentResponse,
+    hardDeleteComment: {
+      name: "HardDeleteComment",
+      I: HardDeleteCommentRequest,
+      O: HardDeleteCommentResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc rpc.DataFetcherService.ModifyComment
+     * @generated from rpc rpc.DataFetcherService.SoftDeleteComment
      */
-    modifyComment: {
-      name: "ModifyComment",
-      I: ModifyCommentRequest,
-      O: ModifyCommentResponse,
+    softDeleteComment: {
+      name: "SoftDeleteComment",
+      I: SoftDeleteCommentRequest,
+      O: SoftDeleteCommentResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc rpc.DataFetcherService.UpdateComment
+     */
+    updateComment: {
+      name: "UpdateComment",
+      I: UpdateCommentRequest,
+      O: UpdateCommentResponse,
       kind: MethodKind.Unary,
     },
     /**

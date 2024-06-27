@@ -102,7 +102,16 @@ func (p *PostgresDatabaseService) SetCommentById(ctx context.Context, commentId 
 	return nil
 }
 
-func (p *PostgresDatabaseService) DeleteCommentById(ctx context.Context, commentId string) error {
+func (p *PostgresDatabaseService) SoftDeleteCommentById(ctx context.Context, commentId string) error {
+	_, err := p.db.ExecContext(ctx, "UPDATE comments SET status = 0 WHERE comment_id = $1", commentId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *PostgresDatabaseService) HardDeleteCommentById(ctx context.Context, commentId string) error {
 	_, err := p.db.ExecContext(ctx, "DELETE FROM comments WHERE comment_id = $1", commentId)
 	if err != nil {
 		return err

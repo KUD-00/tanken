@@ -36,7 +36,8 @@ type DatabaseService interface {
 
 	GetCommentById(ctx context.Context, commentId string) (*types.Comment, error)
 	SetCommentById(ctx context.Context, commentId string, comment *types.Comment) error
-	DeleteCommentById(ctx context.Context, commentId string) error
+	SoftDeleteCommentById(ctx context.Context, commentId string) error
+	HardDeleteCommentById(ctx context.Context, commentId string) error
 
 	// About User
 	GetUserById(ctx context.Context, userId string) (*types.User, error)

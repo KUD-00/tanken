@@ -589,7 +589,7 @@ func TestPostgresDatabaseService_SetCommentById(t *testing.T) {
 	}
 }
 
-func TestPostgresDatabaseService_DeleteCommentById(t *testing.T) {
+func TestPostgresDatabaseService_HardDeleteCommentById(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -605,7 +605,7 @@ func TestPostgresDatabaseService_DeleteCommentById(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	ctx := context.Background()
-	err = service.DeleteCommentById(ctx, commentId)
+	err = service.HardDeleteCommentById(ctx, commentId)
 
 	assert.NoError(t, err)
 	if err := mock.ExpectationsWereMet(); err != nil {

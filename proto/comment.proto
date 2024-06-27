@@ -16,13 +16,24 @@ message AddCommentResponse {
   string commentId = 3;
 }
 
-message RemoveCommentRequest {
+message HardDeleteCommentRequest {
   string userId = 1;
   string postId = 2;
   string commentId = 3;
 }
 
-message RemoveCommentResponse {
+message HardDeleteCommentResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message SoftDeleteCommentRequest {
+  string userId = 1;
+  string postId = 2;
+  string commentId = 3;
+}
+
+message SoftDeleteCommentResponse {
   int64 ok = 1;
   string msg = 2;
 }
@@ -47,12 +58,13 @@ message GetCommentsByPostIdResponse {
   repeated Comment comments = 3;
 }
 
-message ModifyCommentRequest {
+message UpdateCommentRequest {
   string userId = 1;
   string commentId = 2;
+  string content = 3;
 }
 
-message ModifyCommentResponse {
+message UpdateCommentResponse {
   int64 ok = 1;
   string msg = 2;
 }

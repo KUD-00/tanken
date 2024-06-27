@@ -106,9 +106,9 @@ export class AddCommentResponse extends Message<AddCommentResponse> {
 }
 
 /**
- * @generated from message rpc.RemoveCommentRequest
+ * @generated from message rpc.HardDeleteCommentRequest
  */
-export class RemoveCommentRequest extends Message<RemoveCommentRequest> {
+export class HardDeleteCommentRequest extends Message<HardDeleteCommentRequest> {
   /**
    * @generated from field: string userId = 1;
    */
@@ -124,40 +124,40 @@ export class RemoveCommentRequest extends Message<RemoveCommentRequest> {
    */
   commentId = "";
 
-  constructor(data?: PartialMessage<RemoveCommentRequest>) {
+  constructor(data?: PartialMessage<HardDeleteCommentRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "rpc.RemoveCommentRequest";
+  static readonly typeName = "rpc.HardDeleteCommentRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "userId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "postId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "commentId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RemoveCommentRequest {
-    return new RemoveCommentRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): HardDeleteCommentRequest {
+    return new HardDeleteCommentRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RemoveCommentRequest {
-    return new RemoveCommentRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): HardDeleteCommentRequest {
+    return new HardDeleteCommentRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RemoveCommentRequest {
-    return new RemoveCommentRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): HardDeleteCommentRequest {
+    return new HardDeleteCommentRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: RemoveCommentRequest | PlainMessage<RemoveCommentRequest> | undefined, b: RemoveCommentRequest | PlainMessage<RemoveCommentRequest> | undefined): boolean {
-    return proto3.util.equals(RemoveCommentRequest, a, b);
+  static equals(a: HardDeleteCommentRequest | PlainMessage<HardDeleteCommentRequest> | undefined, b: HardDeleteCommentRequest | PlainMessage<HardDeleteCommentRequest> | undefined): boolean {
+    return proto3.util.equals(HardDeleteCommentRequest, a, b);
   }
 }
 
 /**
- * @generated from message rpc.RemoveCommentResponse
+ * @generated from message rpc.HardDeleteCommentResponse
  */
-export class RemoveCommentResponse extends Message<RemoveCommentResponse> {
+export class HardDeleteCommentResponse extends Message<HardDeleteCommentResponse> {
   /**
    * @generated from field: int64 ok = 1;
    */
@@ -168,32 +168,124 @@ export class RemoveCommentResponse extends Message<RemoveCommentResponse> {
    */
   msg = "";
 
-  constructor(data?: PartialMessage<RemoveCommentResponse>) {
+  constructor(data?: PartialMessage<HardDeleteCommentResponse>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "rpc.RemoveCommentResponse";
+  static readonly typeName = "rpc.HardDeleteCommentResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "ok", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 2, name: "msg", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RemoveCommentResponse {
-    return new RemoveCommentResponse().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): HardDeleteCommentResponse {
+    return new HardDeleteCommentResponse().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RemoveCommentResponse {
-    return new RemoveCommentResponse().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): HardDeleteCommentResponse {
+    return new HardDeleteCommentResponse().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RemoveCommentResponse {
-    return new RemoveCommentResponse().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): HardDeleteCommentResponse {
+    return new HardDeleteCommentResponse().fromJsonString(jsonString, options);
   }
 
-  static equals(a: RemoveCommentResponse | PlainMessage<RemoveCommentResponse> | undefined, b: RemoveCommentResponse | PlainMessage<RemoveCommentResponse> | undefined): boolean {
-    return proto3.util.equals(RemoveCommentResponse, a, b);
+  static equals(a: HardDeleteCommentResponse | PlainMessage<HardDeleteCommentResponse> | undefined, b: HardDeleteCommentResponse | PlainMessage<HardDeleteCommentResponse> | undefined): boolean {
+    return proto3.util.equals(HardDeleteCommentResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message rpc.SoftDeleteCommentRequest
+ */
+export class SoftDeleteCommentRequest extends Message<SoftDeleteCommentRequest> {
+  /**
+   * @generated from field: string userId = 1;
+   */
+  userId = "";
+
+  /**
+   * @generated from field: string postId = 2;
+   */
+  postId = "";
+
+  /**
+   * @generated from field: string commentId = 3;
+   */
+  commentId = "";
+
+  constructor(data?: PartialMessage<SoftDeleteCommentRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rpc.SoftDeleteCommentRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "userId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "postId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "commentId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SoftDeleteCommentRequest {
+    return new SoftDeleteCommentRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SoftDeleteCommentRequest {
+    return new SoftDeleteCommentRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SoftDeleteCommentRequest {
+    return new SoftDeleteCommentRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SoftDeleteCommentRequest | PlainMessage<SoftDeleteCommentRequest> | undefined, b: SoftDeleteCommentRequest | PlainMessage<SoftDeleteCommentRequest> | undefined): boolean {
+    return proto3.util.equals(SoftDeleteCommentRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message rpc.SoftDeleteCommentResponse
+ */
+export class SoftDeleteCommentResponse extends Message<SoftDeleteCommentResponse> {
+  /**
+   * @generated from field: int64 ok = 1;
+   */
+  ok = protoInt64.zero;
+
+  /**
+   * @generated from field: string msg = 2;
+   */
+  msg = "";
+
+  constructor(data?: PartialMessage<SoftDeleteCommentResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "rpc.SoftDeleteCommentResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "ok", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 2, name: "msg", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SoftDeleteCommentResponse {
+    return new SoftDeleteCommentResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SoftDeleteCommentResponse {
+    return new SoftDeleteCommentResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SoftDeleteCommentResponse {
+    return new SoftDeleteCommentResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SoftDeleteCommentResponse | PlainMessage<SoftDeleteCommentResponse> | undefined, b: SoftDeleteCommentResponse | PlainMessage<SoftDeleteCommentResponse> | undefined): boolean {
+    return proto3.util.equals(SoftDeleteCommentResponse, a, b);
   }
 }
 
@@ -370,9 +462,9 @@ export class GetCommentsByPostIdResponse extends Message<GetCommentsByPostIdResp
 }
 
 /**
- * @generated from message rpc.ModifyCommentRequest
+ * @generated from message rpc.UpdateCommentRequest
  */
-export class ModifyCommentRequest extends Message<ModifyCommentRequest> {
+export class UpdateCommentRequest extends Message<UpdateCommentRequest> {
   /**
    * @generated from field: string userId = 1;
    */
@@ -383,39 +475,45 @@ export class ModifyCommentRequest extends Message<ModifyCommentRequest> {
    */
   commentId = "";
 
-  constructor(data?: PartialMessage<ModifyCommentRequest>) {
+  /**
+   * @generated from field: string content = 3;
+   */
+  content = "";
+
+  constructor(data?: PartialMessage<UpdateCommentRequest>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "rpc.ModifyCommentRequest";
+  static readonly typeName = "rpc.UpdateCommentRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "userId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "commentId", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "content", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ModifyCommentRequest {
-    return new ModifyCommentRequest().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateCommentRequest {
+    return new UpdateCommentRequest().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ModifyCommentRequest {
-    return new ModifyCommentRequest().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateCommentRequest {
+    return new UpdateCommentRequest().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ModifyCommentRequest {
-    return new ModifyCommentRequest().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateCommentRequest {
+    return new UpdateCommentRequest().fromJsonString(jsonString, options);
   }
 
-  static equals(a: ModifyCommentRequest | PlainMessage<ModifyCommentRequest> | undefined, b: ModifyCommentRequest | PlainMessage<ModifyCommentRequest> | undefined): boolean {
-    return proto3.util.equals(ModifyCommentRequest, a, b);
+  static equals(a: UpdateCommentRequest | PlainMessage<UpdateCommentRequest> | undefined, b: UpdateCommentRequest | PlainMessage<UpdateCommentRequest> | undefined): boolean {
+    return proto3.util.equals(UpdateCommentRequest, a, b);
   }
 }
 
 /**
- * @generated from message rpc.ModifyCommentResponse
+ * @generated from message rpc.UpdateCommentResponse
  */
-export class ModifyCommentResponse extends Message<ModifyCommentResponse> {
+export class UpdateCommentResponse extends Message<UpdateCommentResponse> {
   /**
    * @generated from field: int64 ok = 1;
    */
@@ -426,32 +524,32 @@ export class ModifyCommentResponse extends Message<ModifyCommentResponse> {
    */
   msg = "";
 
-  constructor(data?: PartialMessage<ModifyCommentResponse>) {
+  constructor(data?: PartialMessage<UpdateCommentResponse>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "rpc.ModifyCommentResponse";
+  static readonly typeName = "rpc.UpdateCommentResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "ok", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 2, name: "msg", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ModifyCommentResponse {
-    return new ModifyCommentResponse().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateCommentResponse {
+    return new UpdateCommentResponse().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ModifyCommentResponse {
-    return new ModifyCommentResponse().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateCommentResponse {
+    return new UpdateCommentResponse().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ModifyCommentResponse {
-    return new ModifyCommentResponse().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateCommentResponse {
+    return new UpdateCommentResponse().fromJsonString(jsonString, options);
   }
 
-  static equals(a: ModifyCommentResponse | PlainMessage<ModifyCommentResponse> | undefined, b: ModifyCommentResponse | PlainMessage<ModifyCommentResponse> | undefined): boolean {
-    return proto3.util.equals(ModifyCommentResponse, a, b);
+  static equals(a: UpdateCommentResponse | PlainMessage<UpdateCommentResponse> | undefined, b: UpdateCommentResponse | PlainMessage<UpdateCommentResponse> | undefined): boolean {
+    return proto3.util.equals(UpdateCommentResponse, a, b);
   }
 }
 
