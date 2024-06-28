@@ -7,6 +7,7 @@ import (
 
 	postgres "tanken/backend/common/db/postgres"
 	"tanken/backend/common/types"
+	"tanken/backend/common/utils"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/lib/pq"
@@ -133,22 +134,27 @@ func TestPostgresDatabaseService_SetPostDetails(t *testing.T) {
 	service := postgres.NewPostgresDatabaseService(db)
 
 	postId := "1"
-	post := &types.PostDetails{
-		PostId:    postId,
-		UserId:    "user1",
-		Content:   "content1",
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-		Likes:     int64(10),
-		Status:    int64(1),
-		Location: types.Location{
-			Latitude:  1.23,
-			Longitude: 4.56,
-		},
+	userId := "user1"
+	content := "content1"
+	location := types.Location{
+		Latitude:  1.23,
+		Longitude: 4.56,
 	}
 
-	mock.ExpectExec("INSERT INTO posts").
-		WithArgs(postId, post.UserId, post.Content, post.CreatedAt, post.UpdatedAt, post.Likes, post.Location.Latitude, post.Location.Longitude, post.Status).
+	post := &types.PostDetailsPtr{
+		UserId:    &userId,
+		Content:   &content,
+		CreatedAt: &createdAt,
+		UpdatedAt: &updatedAt,
+		Likes:     utils.Int64Ptr(10),
+		Status:    utils.Int64Ptr(1),
+		Location:  &location,
+	}
+
+	mock.ExpectExec(`INSERT INTO posts \(post_id, user_id, content, created_at, updated_at, likes, latitude, longitude, status\) 
+		VALUES \(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9\) 
+		ON CONFLICT \(post_id\) DO UPDATE SET user_id = EXCLUDED.user_id, content = EXCLUDED.content, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, likes = EXCLUDED.likes, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, status = EXCLUDED.status`).
+		WithArgs(postId, userId, content, createdAt, updatedAt, int64(10), location.Latitude, location.Longitude, int64(1)).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	ctx := context.Background()
@@ -566,18 +572,22 @@ func TestPostgresDatabaseService_SetCommentById(t *testing.T) {
 
 	// Mock data
 	commentId := "comment1"
-	comment := &types.Comment{
-		CommentId: commentId,
-		PostId:    "post1",
-		UserId:    "user1",
-		Content:   "This is a comment.",
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
-		Likes:     10,
+	postId := "post1"
+	userId := "user1"
+	content := "This is a comment."
+	comment := &types.CommentPtr{
+		PostId:    &postId,
+		UserId:    &userId,
+		Content:   &content,
+		CreatedAt: &createdAt,
+		UpdatedAt: &updatedAt,
+		Likes:     utils.Int64Ptr(10),
 	}
 
-	mock.ExpectExec("INSERT INTO comments \\(comment_id, post_id, user_id, content, created_at, updated_at, likes\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5, \\$6, \\$7\\) ON CONFLICT \\(comment_id\\) DO UPDATE SET post_id = EXCLUDED.post_id, user_id = EXCLUDED.user_id, content = EXCLUDED.content, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, likes = EXCLUDED.likes").
-		WithArgs(comment.CommentId, comment.PostId, comment.UserId, comment.Content, comment.CreatedAt, comment.UpdatedAt, comment.Likes).
+	mock.ExpectExec(`INSERT INTO comments \(comment_id, post_id, user_id, content, created_at, updated_at, likes\) 
+		VALUES \(\$1, \$2, \$3, \$4, \$5, \$6, \$7\) 
+		ON CONFLICT \(comment_id\) DO UPDATE SET post_id = EXCLUDED.post_id, user_id = EXCLUDED.user_id, content = EXCLUDED.content, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, likes = EXCLUDED.likes`).
+		WithArgs(commentId, postId, userId, content, createdAt, updatedAt, int64(10)).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	ctx := context.Background()

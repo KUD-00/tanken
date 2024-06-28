@@ -12,7 +12,7 @@ type DatabaseService interface {
 	HardDeletePost(ctx context.Context, postId string) error
 
 	GetPostDetails(ctx context.Context, postId string) (*types.PostDetails, error)
-	SetPostDetails(ctx context.Context, postId string, post *types.PostDetails) error
+	SetPostDetails(ctx context.Context, postId string, post *types.PostDetailsPtr) error
 
 	GetPostLikedBy(ctx context.Context, postId string) ([]string, error)
 	AddPostLikedBy(ctx context.Context, postId string, userId []string) error
@@ -35,7 +35,7 @@ type DatabaseService interface {
 	DeletePostCommentIds(ctx context.Context, postId string, commentIds []string) error
 
 	GetCommentById(ctx context.Context, commentId string) (*types.Comment, error)
-	SetCommentById(ctx context.Context, commentId string, comment *types.Comment) error
+	SetCommentById(ctx context.Context, commentId string, comment *types.CommentPtr) error
 	SoftDeleteCommentById(ctx context.Context, commentId string) error
 	HardDeleteCommentById(ctx context.Context, commentId string) error
 

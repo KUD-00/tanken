@@ -170,18 +170,83 @@ func (p *PostgresDatabaseService) GetPostsDetails(ctx context.Context, postIds [
 	return &posts, nil
 }
 
-func (p *PostgresDatabaseService) SetPostDetails(ctx context.Context, postId string, post *types.PostDetails) error {
-	_, err := p.db.ExecContext(ctx, "INSERT INTO posts (post_id, user_id, content, created_at, updated_at, likes, latitude, longitude, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (post_id) DO UPDATE SET content = EXCLUDED.content, updated_at = EXCLUDED.updated_at, likes = EXCLUDED.likes, latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, status = EXCLUDED.status",
-		postId,
-		post.UserId,
-		post.Content,
-		post.CreatedAt,
-		post.UpdatedAt,
-		post.Likes,
-		post.Location.Latitude,
-		post.Location.Longitude,
-		post.Status,
-	)
+func (p *PostgresDatabaseService) SetPostDetails(ctx context.Context, postId string, post *types.PostDetailsPtr) error {
+	insertFields := []string{"post_id"}
+	insertValues := []string{"$1"}
+	updateFields := []string{}
+	values := []interface{}{postId}
+	placeholderCount := 2
+
+	if post.UserId != nil {
+		insertFields = append(insertFields, "user_id")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "user_id = EXCLUDED.user_id")
+		values = append(values, *post.UserId)
+		placeholderCount++
+	}
+
+	if post.Content != nil {
+		insertFields = append(insertFields, "content")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "content = EXCLUDED.content")
+		values = append(values, *post.Content)
+		placeholderCount++
+	}
+
+	if post.CreatedAt != nil {
+		insertFields = append(insertFields, "created_at")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "created_at = EXCLUDED.created_at")
+		values = append(values, *post.CreatedAt)
+		placeholderCount++
+	}
+
+	if post.UpdatedAt != nil {
+		insertFields = append(insertFields, "updated_at")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "updated_at = EXCLUDED.updated_at")
+		values = append(values, *post.UpdatedAt)
+		placeholderCount++
+	}
+
+	if post.Likes != nil {
+		insertFields = append(insertFields, "likes")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "likes = EXCLUDED.likes")
+		values = append(values, *post.Likes)
+		placeholderCount++
+	}
+
+	if post.Location != nil {
+		insertFields = append(insertFields, "latitude", "longitude")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount), fmt.Sprintf("$%d", placeholderCount+1))
+		updateFields = append(updateFields, "latitude = EXCLUDED.latitude", "longitude = EXCLUDED.longitude")
+		values = append(values, post.Location.Latitude, post.Location.Longitude)
+		placeholderCount += 2
+	}
+
+	if post.Status != nil {
+		insertFields = append(insertFields, "status")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "status = EXCLUDED.status")
+		values = append(values, *post.Status)
+		placeholderCount++
+	}
+
+	if len(updateFields) == 0 {
+		// If no fields to update, just return without doing anything
+		return nil
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO posts (%s)
+		VALUES (%s)
+		ON CONFLICT (post_id) DO UPDATE SET %s`,
+		strings.Join(insertFields, ", "),
+		strings.Join(insertValues, ", "),
+		strings.Join(updateFields, ", "))
+
+	_, err := p.db.ExecContext(ctx, query, values...)
 	if err != nil {
 		return err
 	}

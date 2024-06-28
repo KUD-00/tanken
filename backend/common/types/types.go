@@ -24,12 +24,14 @@ type PostDetails struct {
 }
 
 type PostDetailsPtr struct {
+	PostId     *string
 	CreatedAt  *int64
 	UpdatedAt  *int64
 	UserId     *string
 	Content    *string
 	Likes      *int64
 	Bookmarks  *int64
+	Location   *Location
 	Status     *int64
 	CacheScore *int64
 	Changed    *bool
@@ -53,6 +55,18 @@ type Comment struct {
 	Status    int64
 }
 
+type CommentPtr struct {
+	CommentId *string
+	PostId    *string
+	UserId    *string
+	Content   *string
+	CreatedAt *int64
+	UpdatedAt *int64
+	Likes     *int64
+	Status    *int64
+	Changed   *bool
+}
+
 type User struct {
 	UserId             string
 	Username           string
@@ -65,7 +79,6 @@ type User struct {
 }
 
 type UserPtr struct {
-	// for edit
 	Username           *string
 	Email              *string
 	Bio                *string

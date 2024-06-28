@@ -85,16 +85,75 @@ func (p *PostgresDatabaseService) GetCommentById(ctx context.Context, commentId 
 	return &comment, nil
 }
 
-func (p *PostgresDatabaseService) SetCommentById(ctx context.Context, commentId string, comment *types.Comment) error {
-	_, err := p.db.ExecContext(ctx, "INSERT INTO comments (comment_id, post_id, user_id, content, created_at, updated_at, likes) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (comment_id) DO UPDATE SET post_id = EXCLUDED.post_id, user_id = EXCLUDED.user_id, content = EXCLUDED.content, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, likes = EXCLUDED.likes",
-		commentId,
-		comment.PostId,
-		comment.UserId,
-		comment.Content,
-		comment.CreatedAt,
-		comment.UpdatedAt,
-		comment.Likes,
-	)
+func (p *PostgresDatabaseService) SetCommentById(ctx context.Context, commentId string, comment *types.CommentPtr) error {
+	insertFields := []string{"comment_id"}
+	insertValues := []string{"$1"}
+	updateFields := []string{}
+	values := []interface{}{commentId}
+	placeholderCount := 2
+
+	if comment.PostId != nil {
+		insertFields = append(insertFields, "post_id")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "post_id = EXCLUDED.post_id")
+		values = append(values, *comment.PostId)
+		placeholderCount++
+	}
+
+	if comment.UserId != nil {
+		insertFields = append(insertFields, "user_id")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "user_id = EXCLUDED.user_id")
+		values = append(values, *comment.UserId)
+		placeholderCount++
+	}
+
+	if comment.Content != nil {
+		insertFields = append(insertFields, "content")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "content = EXCLUDED.content")
+		values = append(values, *comment.Content)
+		placeholderCount++
+	}
+
+	if comment.CreatedAt != nil {
+		insertFields = append(insertFields, "created_at")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "created_at = EXCLUDED.created_at")
+		values = append(values, *comment.CreatedAt)
+		placeholderCount++
+	}
+
+	if comment.UpdatedAt != nil {
+		insertFields = append(insertFields, "updated_at")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "updated_at = EXCLUDED.updated_at")
+		values = append(values, *comment.UpdatedAt)
+		placeholderCount++
+	}
+
+	if comment.Likes != nil {
+		insertFields = append(insertFields, "likes")
+		insertValues = append(insertValues, fmt.Sprintf("$%d", placeholderCount))
+		updateFields = append(updateFields, "likes = EXCLUDED.likes")
+		values = append(values, *comment.Likes)
+		placeholderCount++
+	}
+
+	if len(updateFields) == 0 {
+		// If no fields to update, just return without doing anything
+		return nil
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO comments (%s)
+		VALUES (%s)
+		ON CONFLICT (comment_id) DO UPDATE SET %s`,
+		strings.Join(insertFields, ", "),
+		strings.Join(insertValues, ", "),
+		strings.Join(updateFields, ", "))
+
+	_, err := p.db.ExecContext(ctx, query, values...)
 	if err != nil {
 		return err
 	}
