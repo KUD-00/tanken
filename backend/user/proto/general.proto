@@ -1,0 +1,15 @@
+//TODO: imports act weird, need to fix
+syntax = "proto3";
+
+package rpc;
+
+message User {
+  string userId = 1;
+  string userName = 2;
+  string email = 3;
+  string provider = 4;
+  string profilePictureLink = 5;
+  string bio = 6;
+  int64 subscribed = 7;
+  int64 status = 8;
+}

@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package rpc;
+
+import "general.proto";
+
+message SignUpUserRequest {
+  string email = 1;
+  string name = 2;
+  string provider = 3;
+  string bio = 4;
+  string profilePictureLink = 5;
+}
+
+message SignUpUserResponse {
+  int64 ok = 1;
+  string msg = 2;
+  string userId = 3;
+}
+
+message GetUserInfoRequest {
+  string userId = 1;
+}
+
+message GetUserInfoResponse {
+  int64 ok = 1;
+  string msg = 2;
+  User user = 3;
+}
+
+message SoftDeleteUserRequest {
+  string userId = 1;
+}
+
+message SoftDeleteUserResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message HardDeleteUserRequest {
+  string userId = 1;
+}
+
+message HardDeleteUserResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message UpdateUserRequest {
+  string userId = 1;
+  optional string name = 2;
+  optional string bio = 3;
+  optional string profilePictureLink = 4;
+  optional int64 subscribed = 5;
+}
+
+message UpdateUserResponse {
+  int64 ok = 1;
+  string msg = 2;
+}
+
+message GetUserInfoByOAuthRequest {
+  string provider = 1;
+  string email = 2;
+}
+
+message GetUserInfoByOAuthResponse {
+  int64 ok = 1;
+  string msg = 2;
+  User user = 3;
+}

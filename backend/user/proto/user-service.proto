@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package rpc;
+option go_package = "tanken/backend/user/rpc/pb";
+
+import "general.proto";
+import "user.proto";
+
+message TestConnectionRequest {
+    double foo = 1;
+}
+
+message TestConnectionResponse {
+    bool ok = 1;
+}
+
+service DataFetcherService{
+  rpc TestConnection(TestConnectionRequest) returns (TestConnectionResponse) {}
+
+  rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse);
+  rpc SignUpUser(SignUpUserRequest) returns (SignUpUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc HardDeleteUser(HardDeleteUserRequest) returns (HardDeleteUserResponse);
+  rpc SoftDeleteUser(SoftDeleteUserRequest) returns (SoftDeleteUserResponse);
+  rpc GetUserInfoByOAuth(GetUserInfoByOAuthRequest) returns (GetUserInfoByOAuthResponse);
+}
